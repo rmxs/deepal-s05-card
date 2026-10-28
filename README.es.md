@@ -30,7 +30,7 @@ _(Las imágenes están en inglés.)_
 - Botones de control redondos: bloqueo, ventanillas, maletero, clima, neumáticos, interior, destellos, claxon, localizar coche — disposición, etiquetas, tamaño, orden y visibilidad configurables.
 - Anillos de autonomía y batería (y combustible en el PHEV); el anillo de la batería se anima mientras carga.
 - Estado de carga: corriente, tiempo restante y tipo como texto junto al puerto de carga (4 estilos), más un efecto animado opcional sobre el coche (flujo en el cable / pulso en el puerto / barrido de luz).
-- Ventana **Car View**: un render 3/4 real del coche en cinco colores con puertas, capó, portón, ventanillas y luces en vivo, y las cuatro presiones de los neumáticos unidas a sus ruedas (verde OK / rojo alerta).
+- Ventana **Car View**: un render 3/4 real del coche en cinco colores con puertas, capó, portón, ventanillas y luces en vivo, y las cuatro presiones de los neumáticos unidas a sus ruedas (verde OK / rojo alerta). El color seleccionado se usa también en la imagen principal.
 - Ventana de clima con selector de temperatura y flujo de aire animado que toma el color de la temperatura objetivo, además de calefacción/ventilación de asientos y calefacción del volante.
 - Diagnóstico con iconos grandes al estilo del tablero y color según el estado (airbag, ABS, frenos, neumáticos, batería de 12 V…). Pulsa «+N» para ver todos los sensores; los sensores nuevos se descubren con un botón.
 - Tarjetas de información propias: añade cualquier sensor.
@@ -84,7 +84,7 @@ El selector de temperatura objetivo usa directamente la entidad `climate.<prefix
 ## Fotos y capas
 
 La tarjeta muestra fotos de `images/car/` (hero), las capas del Car View de `images/iso/<color>/` y las capas del interior de `images/interior/`, todo junto al archivo de la tarjeta (HACS lo instala con la tarjeta).
-Las fotos hero están hechas para un **Deepal S05 negro**; el Car View está disponible en cinco colores (*Ajustes → Mostrar → Color del coche*). Para otro modelo sustituye los archivos (mismos nombres) o indica a la tarjeta tu propia carpeta en *Ajustes → Imágenes*.
+El hero negro usa las fotos de estudio; los demás colores usan `hero_<color>.jpg`, un render generado a partir de las capas del Car View, así que *Ajustes → Mostrar → Color del coche* cambia tanto el hero como el Car View. Para otro modelo sustituye los archivos (mismos nombres) o indica a la tarjeta tu propia carpeta en *Ajustes → Imágenes*.
 Consulta [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) para el origen y las licencias de las imágenes.
 
 ## Solución de problemas
@@ -92,6 +92,7 @@ Consulta [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) para el origen y las l
 | Problema | Solución |
 |---|---|
 | «Vehicle images not found» | La carpeta `images/` no está junto al archivo de la tarjeta. Actualiza a la 1.2.2 o posterior con HACS (las versiones anteriores solo instalaban el archivo `.js`). Si las carpetas siguen sin aparecer tras actualizar, reinicia Home Assistant y usa HACS → la tarjeta → ⋮ → **Redownload**; o copia todo el contenido de `dist/`. |
+| El hero sigue en negro tras elegir otro color | Falta `hero_<color>.jpg` (instalación antigua) o el navegador tiene la tarjeta en caché. Actualiza con HACS y haz un hard refresh; si usas un `image_path` propio, copia allí `hero_<color>.jpg` o vuelve a la carpeta por defecto. |
 | Todos los valores muestran `--` | Prefijo incorrecto. Define `prefix:` con la parte entre el dominio y el nombre del sensor (`sensor.`**`s05`**`_battery_level`). |
 | Los ajustes no se guardan en el YAML | Necesita una cuenta de administrador y un panel gestionado desde la interfaz. Si no, se guardan en tu perfil y puedes copiar el YAML desde *Ajustes → General*. |
 | Los botones no hacen nada | La integración indica que los comandos remotos del S05 son experimentales y requieren el PIN de control remoto. |
@@ -104,7 +105,7 @@ bash scripts/build.sh      # genera dist/deepal-s05-card.js a partir de src/
 ```
 
 Edita los archivos de `src/`, ejecuta el build y haz commit de `src/` y `dist/`.
-Las imágenes del Car View se convierten desde los renders de dec_deepal con `tools/build_iso.py` y las capas del interior con `tools/build_layers.py` (consulta la cabecera de cada script).
+Las imágenes del Car View se convierten desde los renders de dec_deepal con `tools/build_iso.py`, las capas del interior con `tools/build_layers.py` y los hero de color con `tools/build_hero.py` (consulta la cabecera de cada script).
 
 ## Licencia
 

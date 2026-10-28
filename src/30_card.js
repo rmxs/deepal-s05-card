@@ -1,6 +1,6 @@
 /* ───────────────────────── Κάρτα ───────────────────────── */
 const RING = '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><rect x="2.5" y="2.5" width="95" height="95" rx="47.5" pathLength="100"/></svg>';
-const REBUILD_KEYS = ["image_path", "layers_path", "images", "name", "image_scale", "image_aspect", "prefix", "entities"];
+const REBUILD_KEYS = ["image_path", "layers_path", "images", "name", "image_scale", "image_aspect", "prefix", "entities", "car_color"];
 const normPath = (p) => (p ? (p.endsWith("/") ? p : p + "/") : p);
 
 /* Συγχώνευση: προεπιλογές < YAML κάρτας < τοπικές ρυθμίσεις συσκευής */
@@ -536,11 +536,18 @@ class DeepalS05Card extends HTMLElement {
   }
 
   /* ───── build ───── */
+  /* Σειρά προτεραιότητας: images[k] της κάρτας → hero_<χρώμα>.jpg → μαύρη φωτογραφία κατάστασης.
+     Το idx χρησιμοποιείται από το onerror των <img> για να πέσει στο επόμενο. */
   _heroSrc(k, idx = 0) {
-    const c = this._c, file = c.images[k] || HERO_FILES[k] || DASH_FILES[k];
-    if (/^(https?:)?\/\//.test(file) || file.startsWith("/")) return idx === 0 ? file : null;
-    const bases = c.image_path ? [normPath(c.image_path)] : [`${SCRIPT_BASE}images/car/`];
-    return bases[idx] ? bases[idx] + file : null;
+    const c = this._c, base = c.image_path ? normPath(c.image_path) : `${SCRIPT_BASE}images/car/`;
+    const color = CAR_COLORS.some((x) => x[0] === c.car_color) ? c.car_color : "black";
+    const abs = (f) => (/^(https?:)?\/\//.test(f) || f.startsWith("/") ? f : base + f);
+    const list = [];
+    if (c.images[k]) list.push(abs(c.images[k]));
+    if (HERO_FILES[k] && color !== "black") list.push(`${base}hero_${color}.jpg`);
+    const def = HERO_FILES[k] || DASH_FILES[k];
+    if (def) list.push(base + def);
+    return [...new Set(list)][idx] || null;
   }
   _layerBase() { return this._c.layers_path ? normPath(this._c.layers_path) : `${SCRIPT_BASE}images/`; }
 

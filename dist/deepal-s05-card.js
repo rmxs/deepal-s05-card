@@ -92,7 +92,7 @@ const DEFAULTS = {
   tire_max: 3.5, // bar — πάνω από αυτό «υψηλή»
   tire_unit: "bar", // bar | kPa | psi
   tire_check: "vehicle", // vehicle = μόνο οι ειδοποιήσεις του οχήματος · limits = τα δικά μου όρια · both = και τα δύο
-  car_color: "black", // χρώμα αμαξιού στις εικόνα Car View: black · blue · grey · silver · white
+  car_color: "black", // χρώμα αμαξιού στην κύρια εικόνα και στο Car View: black · blue · grey · silver · white
   iso_wheels: "cover", // ζάντες στο Car View: cover (20" με τάπες) · open (20" χωρίς τάπες) · pro (18")
   charge_style: "line", // line · text · big · beside
   air_t1: 22, air_t2: 24, // κλιματισμός: μέχρι t1 δροσερός αέρας, μέχρι t2 μέτριος, πάνω ζεστός
@@ -174,6 +174,7 @@ const hasFuel = (hass, c) => c.powertrain === "ev" ? false : c.powertrain === "p
   : !!hass?.states && ["fuel_range", "fuel_level"].some((k) => hass.states[resolveId(hass, c, `sensor.${k}`)]);
 const SETTING_KEYS = Object.keys(DEFAULTS);
 
+// Μαύρο: φωτογραφίες ανά κατάσταση. Τα άλλα χρώματα: hero_<χρώμα>.jpg (render από τα layers του Car View).
 const HERO_FILES = {
   off: "hero_off.jpg",
   lights: "hero_lights.jpg",
@@ -829,7 +830,7 @@ const T = (s, ...a) => I18N.t(s, a);
   "Ασημί": "Silver",
   "Λευκό": "White",
   "Χρώμα αμαξιού": "Car color",
-  "Για την εικόνα Car View στο popup του οχήματος.": "Used by the Car View image in the vehicle popup.",
+  "Για την κύρια εικόνα και το Car View. Το μαύρο χρησιμοποιεί τις φωτογραφίες· τα άλλα χρώματα χρησιμοποιούν το render του οχήματος.": "For the main image and the Car View. Black uses the photos; the other colours use the vehicle render.",
   "Ζάντες (Car View)": "Wheels (Car View)",
   "20″ με τάπες": "20″ with covers",
   "20″ χωρίς τάπες": "20″ without covers",
@@ -1484,7 +1485,7 @@ const discoverDiag = (hass, c) => {
 };
 /* ───────────────────────── Κάρτα ───────────────────────── */
 const RING = '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><rect x="2.5" y="2.5" width="95" height="95" rx="47.5" pathLength="100"/></svg>';
-const REBUILD_KEYS = ["image_path", "layers_path", "images", "name", "image_scale", "image_aspect", "prefix", "entities"];
+const REBUILD_KEYS = ["image_path", "layers_path", "images", "name", "image_scale", "image_aspect", "prefix", "entities", "car_color"];
 const normPath = (p) => (p ? (p.endsWith("/") ? p : p + "/") : p);
 
 /* Συγχώνευση: προεπιλογές < YAML κάρτας < τοπικές ρυθμίσεις συσκευής */
@@ -2020,11 +2021,18 @@ class DeepalS05Card extends HTMLElement {
   }
 
   /* ───── build ───── */
+  /* Σειρά προτεραιότητας: images[k] της κάρτας → hero_<χρώμα>.jpg → μαύρη φωτογραφία κατάστασης.
+     Το idx χρησιμοποιείται από το onerror των <img> για να πέσει στο επόμενο. */
   _heroSrc(k, idx = 0) {
-    const c = this._c, file = c.images[k] || HERO_FILES[k] || DASH_FILES[k];
-    if (/^(https?:)?\/\//.test(file) || file.startsWith("/")) return idx === 0 ? file : null;
-    const bases = c.image_path ? [normPath(c.image_path)] : [`${SCRIPT_BASE}images/car/`];
-    return bases[idx] ? bases[idx] + file : null;
+    const c = this._c, base = c.image_path ? normPath(c.image_path) : `${SCRIPT_BASE}images/car/`;
+    const color = CAR_COLORS.some((x) => x[0] === c.car_color) ? c.car_color : "black";
+    const abs = (f) => (/^(https?:)?\/\//.test(f) || f.startsWith("/") ? f : base + f);
+    const list = [];
+    if (c.images[k]) list.push(abs(c.images[k]));
+    if (HERO_FILES[k] && color !== "black") list.push(`${base}hero_${color}.jpg`);
+    const def = HERO_FILES[k] || DASH_FILES[k];
+    if (def) list.push(base + def);
+    return [...new Set(list)][idx] || null;
   }
   _layerBase() { return this._c.layers_path ? normPath(this._c.layers_path) : `${SCRIPT_BASE}images/`; }
 
@@ -2829,7 +2837,7 @@ class DeepalS05Settings extends HTMLElement {
     const a = Number(c.air_t1) || 22, b = Number(c.air_t2) || 24, lo = 16, hi = 30, pc = (v) => Math.min(100, Math.max(0, ((v - lo) / (hi - lo)) * 100));
     const cc = CAR_COLORS.some((x) => x[0] === c.car_color) ? c.car_color : "black";
     return `<h4>Χρώμα αμαξιού</h4>
-      <p class="hint">Για την εικόνα Car View στο popup του οχήματος.</p>
+      <p class="hint">Για την κύρια εικόνα και το Car View. Το μαύρο χρησιμοποιεί τις φωτογραφίες· τα άλλα χρώματα χρησιμοποιούν το render του οχήματος.</p>
       <div class="csw">${CAR_COLORS.map(([k, n, hex]) => `<button data-sset="car_color|${k}" class="${k === cc ? "on" : ""}" style="background:${hex}" title="${esc(T(n))}" aria-label="${esc(T(n))}"></button>`).join("")}</div>
       ${this._opt("Ζάντες (Car View)", this._seg("iso_wheels", c.iso_wheels || "cover", [["cover", "20″ με τάπες"], ["open", "20″ χωρίς τάπες"], ["pro", "18″ Pro"]]))}
       <h4>Χρώμα αέρα κλιματισμού</h4>

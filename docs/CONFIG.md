@@ -47,7 +47,7 @@ name: Deepal S05
 | `info` | `odometer`, `fuel_level` | Built-in info tiles. |
 | `info_custom` | `[]` | Extra tiles: `{entity, label, icon, unit, tap_action, hold_action}`. |
 | `entities` | `{}` | Per-entity override, e.g. `sensor.battery_level: sensor.my_other_battery`. |
-| `car_color` | `black` | Colour of the car in the Car View popup: `black`, `blue`, `grey`, `silver`, `white`. |
+| `car_color` | `black` | Colour of the car in the hero image and the Car View popup: `black`, `blue`, `grey`, `silver`, `white`. Black uses the studio photos; the other colours use a render built from the Car View layers (`hero_<colour>.jpg`). |
 | `iso_wheels` | `cover` | Wheels in the Car View: `cover` (20″ with covers), `open` (20″ without) or `pro` (18″). |
 | `air_t1` / `air_t2` | `22` / `24` | Climate airflow colour limits (°C of the target): up to `t1` cool, up to `t2` mild, above warm. |
 | `air_c1` / `air_c2` / `air_c3` | `#8ec5ff` / `#ffcc3d` / `#ff7a2e` | Airflow colours: cool, mild, warm. |
@@ -55,9 +55,9 @@ name: Deepal S05
 | `tire_min` / `tire_max` | `2.0` / `3.5` | Pressure range (bar) considered normal; used when `tire_check` is `limits` or `both`. |
 | `tire_check` | `vehicle` | What marks a tyre as not OK: `vehicle` (the car's own alerts), `limits` (your min/max) or `both`. |
 | `climate_on_mode` | auto | HVAC mode used to turn the climate on (default: detected from the entity). |
-| `image_path` | `<card folder>/images/car/` | Folder with the hero photos. |
+| `image_path` | `<card folder>/images/car/` | Folder with the hero photos. The colour renders are looked up here as `hero_<colour>.jpg`; if one is missing, the card falls back to the black photo. |
 | `layers_path` | `<card folder>/images/` | Folder with the `iso/` (Car View) and `interior/` layers. |
-| `images` | `{}` | Per-photo file name override. |
+| `images` | `{}` | Per-photo file name override. Takes precedence over the colour render. |
 | `image_scale` | `1.2` | Zoom of the hero photo. |
 | `image_aspect` | auto | Aspect ratio of the hero, e.g. `16 / 9`. |
 

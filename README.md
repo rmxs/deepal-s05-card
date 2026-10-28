@@ -28,7 +28,7 @@ It works with the [Deepal Alternative](https://github.com/Sunek0/ha-deepal-alter
 - Round control buttons: lock, windows, trunk, climate, tyres, interior, flash lights, horn, find car — layout, labels, size, order and visibility are configurable.
 - Range, battery (and fuel for PHEV) rings; the battery ring animates while charging.
 - Charging status: current, time remaining and type as text next to the charge port (4 styles), plus an optional animated effect on the car (cable flow / charge-port pulse / light sweep).
-- **Car View** popup: a real 3/4 render of the car in five colours with live doors, bonnet, tailgate, windows and lights, and the four tyre pressures connected to their wheels (green OK / red alert).
+- **Car View** popup: a real 3/4 render of the car in five colours with live doors, bonnet, tailgate, windows and lights, and the four tyre pressures connected to their wheels (green OK / red alert). The selected colour is also used for the main hero image.
 - Climate popup with a temperature picker and animated airflow coloured by the target temperature, plus seat heating/ventilation and steering-wheel heating.
 - Diagnostics shown as large, status-coloured dashboard icons (airbag, ABS, brakes, tyres, 12 V battery…). Tap “+N” for the full list of sensors; new sensors can be discovered with one button.
 - Custom info tiles: add any sensor.
@@ -82,7 +82,7 @@ The target temperature picker uses the `climate.<prefix>_cabin_climate` entity d
 ## Photos and layers
 
 The card shows photos from `images/car/` (hero), the Car View layers from `images/iso/<colour>/` and the interior layers from `images/interior/`, all next to the card file (HACS installs them with the card).
-The hero photos are made for a **black Deepal S05**; the Car View is available in five colours (*Settings → Appearance → Car colour*). For another model replace the files (same names) or point the card to your own folder in *Settings → Images*.
+The black hero uses the studio photos; the other colours use `hero_<colour>.jpg`, a render built from the Car View layers, so *Settings → Appearance → Car colour* changes both the hero and the Car View. For another model replace the files (same names) or point the card to your own folder in *Settings → Images*.
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the origin and licences of the images.
 
 ## Troubleshooting
@@ -90,6 +90,7 @@ See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the origin and licences
 | Problem | Fix |
 |---|---|
 | "Vehicle images not found" | The `images/` folder is not next to the card file. Update to 1.2.2 or later via HACS (earlier HACS installs only got the `.js` file). If the folders are still missing after the update, restart Home Assistant and use HACS → the card → ⋮ → **Redownload**; or copy the whole `dist/` content by hand. |
+| The hero stays black after choosing another colour | The `hero_<colour>.jpg` file is missing (older install) or the card is cached. Update via HACS and hard-refresh; if you use a custom `image_path`, copy `hero_<colour>.jpg` there or set `image_path` back to the default folder. |
 | All values show `--` | Wrong prefix. Set `prefix:` to the part between the domain and the sensor name (`sensor.`**`s05`**`_battery_level`). |
 | Settings are not saved to YAML | Needs an administrator account and a UI-managed dashboard. Otherwise they are stored in your user profile and you can copy the YAML from *Settings → General*. |
 | Buttons do nothing | The integration documents that remote commands on the S05 are experimental and need the remote-control PIN. |
@@ -101,7 +102,7 @@ bash scripts/build.sh      # builds dist/deepal-s05-card.js from src/
 ```
 
 Edit the files in `src/`, run the build, commit both `src/` and `dist/`.
-The Car View images are converted from the dec_deepal renders with `tools/build_iso.py`, the interior layers with `tools/build_layers.py` (see the header of each script).
+The Car View images are converted from the dec_deepal renders with `tools/build_iso.py`, the interior layers with `tools/build_layers.py`, and the colour hero images with `tools/build_hero.py` (see the header of each script).
 
 ## License
 

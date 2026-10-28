@@ -375,7 +375,7 @@
   "Ασημί": "Silver",
   "Λευκό": "White",
   "Χρώμα αμαξιού": "Car color",
-  "Για την εικόνα Car View στο popup του οχήματος.": "Used by the Car View image in the vehicle popup.",
+  "Για την κύρια εικόνα και το Car View. Το μαύρο χρησιμοποιεί τις φωτογραφίες· τα άλλα χρώματα χρησιμοποιούν το render του οχήματος.": "For the main image and the Car View. Black uses the photos; the other colours use the vehicle render.",
   "Ζάντες (Car View)": "Wheels (Car View)",
   "20″ με τάπες": "20″ with covers",
   "20″ χωρίς τάπες": "20″ without covers",

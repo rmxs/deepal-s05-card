@@ -375,7 +375,7 @@
   "Ασημί": "Plata",
   "Λευκό": "Blanco",
   "Χρώμα αμαξιού": "Color del coche",
-  "Για την εικόνα Car View στο popup του οχήματος.": "Se usa en la imagen Car View del popup del vehículo.",
+  "Για την κύρια εικόνα και το Car View. Το μαύρο χρησιμοποιεί τις φωτογραφίες· τα άλλα χρώματα χρησιμοποιούν το render του οχήματος.": "Para la imagen principal y el Car View. El negro usa las fotos; los demás colores usan el render del vehículo.",
   "Ζάντες (Car View)": "Llantas (Car View)",
   "20″ με τάπες": "20″ con tapacubos",
   "20″ χωρίς τάπες": "20″ sin tapacubos",

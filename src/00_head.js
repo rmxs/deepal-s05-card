@@ -92,7 +92,7 @@ const DEFAULTS = {
   tire_max: 3.5, // bar — πάνω από αυτό «υψηλή»
   tire_unit: "bar", // bar | kPa | psi
   tire_check: "vehicle", // vehicle = μόνο οι ειδοποιήσεις του οχήματος · limits = τα δικά μου όρια · both = και τα δύο
-  car_color: "black", // χρώμα αμαξιού στις εικόνα Car View: black · blue · grey · silver · white
+  car_color: "black", // χρώμα αμαξιού στην κύρια εικόνα και στο Car View: black · blue · grey · silver · white
   iso_wheels: "cover", // ζάντες στο Car View: cover (20" με τάπες) · open (20" χωρίς τάπες) · pro (18")
   charge_style: "line", // line · text · big · beside
   air_t1: 22, air_t2: 24, // κλιματισμός: μέχρι t1 δροσερός αέρας, μέχρι t2 μέτριος, πάνω ζεστός
@@ -174,6 +174,7 @@ const hasFuel = (hass, c) => c.powertrain === "ev" ? false : c.powertrain === "p
   : !!hass?.states && ["fuel_range", "fuel_level"].some((k) => hass.states[resolveId(hass, c, `sensor.${k}`)]);
 const SETTING_KEYS = Object.keys(DEFAULTS);
 
+// Μαύρο: φωτογραφίες ανά κατάσταση. Τα άλλα χρώματα: hero_<χρώμα>.jpg (render από τα layers του Car View).
 const HERO_FILES = {
   off: "hero_off.jpg",
   lights: "hero_lights.jpg",

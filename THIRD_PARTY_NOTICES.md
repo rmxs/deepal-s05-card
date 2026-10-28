@@ -27,9 +27,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 The Car View layers (`dist/images/iso/<colour>`, front-left isometric view, 750×500) are the original renders of the five colours, converted from PNG to WebP (`tools/build_iso.py`) without any other change; the number plate layer is not used. The interior layers were recoloured to black with `tools/build_layers.py`.
 
+The colour hero images (`dist/images/car/hero_<colour>.jpg`) are composed from these layers and a generated background (`tools/build_hero.py`); they are distributed under the same MIT licence.
+
 ## Vehicle photos (`dist/images/car`)
 
-Images of a black Deepal S05 used as the hero and dashboard images. They were created by the project author with an
+The black hero and dashboard images are photos of a Deepal S05. They were created by the project author with an
 AI image generator and are released under the same MIT licence as the rest of the project.
 They depict a real vehicle model; Deepal and Changan names and designs remain the property of their owners.
 

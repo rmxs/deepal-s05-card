@@ -187,7 +187,7 @@ class DeepalS05Settings extends HTMLElement {
     const a = Number(c.air_t1) || 22, b = Number(c.air_t2) || 24, lo = 16, hi = 30, pc = (v) => Math.min(100, Math.max(0, ((v - lo) / (hi - lo)) * 100));
     const cc = CAR_COLORS.some((x) => x[0] === c.car_color) ? c.car_color : "black";
     return `<h4>Χρώμα αμαξιού</h4>
-      <p class="hint">Για την εικόνα Car View στο popup του οχήματος.</p>
+      <p class="hint">Για την κύρια εικόνα και το Car View. Το μαύρο χρησιμοποιεί τις φωτογραφίες· τα άλλα χρώματα χρησιμοποιούν το render του οχήματος.</p>
       <div class="csw">${CAR_COLORS.map(([k, n, hex]) => `<button data-sset="car_color|${k}" class="${k === cc ? "on" : ""}" style="background:${hex}" title="${esc(T(n))}" aria-label="${esc(T(n))}"></button>`).join("")}</div>
       ${this._opt("Ζάντες (Car View)", this._seg("iso_wheels", c.iso_wheels || "cover", [["cover", "20″ με τάπες"], ["open", "20″ χωρίς τάπες"], ["pro", "18″ Pro"]]))}
       <h4>Χρώμα αέρα κλιματισμού</h4>
