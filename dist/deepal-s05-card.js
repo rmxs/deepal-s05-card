@@ -9,7 +9,7 @@
  * (MIT) — δες THIRD_PARTY_NOTICES.md στον φάκελο της κάρτας.
  */
 (() => {
-const CARD_VERSION = "1.3.0";
+const CARD_VERSION = "1.3.1";
 const TAG = "deepal-s05-card";
 const SETTINGS_TAG = "deepal-s05-settings";
 const EDITOR_TAG = "deepal-s05-card-editor";
@@ -902,6 +902,7 @@ const smoothPath = (p) => {
 };
 const CHG_D = smoothPath(CHG_PTS);
 /* Όψη φόρτισης Car View (750×500, dec_deepal vista_carga): καλώδιο από το έδαφος προς το φις, και θέση της θύρας */
+const FAR_ALERT = 0.55; // αδιαφάνεια του κόκκινου στα παράθυρα της απέναντι πλευράς
 const CARGA_PTS = [[705, 370], [677, 365], [640, 359], [613, 353], [597, 347], [588, 338], [583, 325], [580, 310], [578, 295], [576, 278], [574, 262], [572, 248], [570, 238]];
 const CARGA_PORT = [566, 236];
 const CARGA_D = smoothPath(CARGA_PTS);
@@ -1371,7 +1372,9 @@ ${BASE_CSS}
 .chgbox.text, .chgbox.big { top:46px; left: min(calc(50% + 29.8% * var(--ds-scale, 1.2) - 16px), calc(100% - 20px)); }
 .chgbox.big .a { font-size:34px; font-weight:800; line-height:1; } .chgbox.big .a small { font-size:16px; font-weight:700; margin-left:2px; }
 .chgbox.beside { top: calc(50% - 7.9% * var(--ds-scale, 1.2) - 10px); transform: translate(-100%, -50%); left: calc(50% + 29.8% * var(--ds-scale, 1.2) - 24px); }
-.chgbox.beside::after { content:""; position:absolute; right:-20px; top:50%; width:16px; border-top:1.5px dashed rgba(var(--ds-ok), .8); }
+/* ο οδηγός του κειμένου δεν είναι διακεκομμένος: ώστε να μη μοιάζει με τα διακεκομμένα της ροής στο καλώδιο */
+.chgbox.beside::after { content:""; position:absolute; right:-24px; top:50%; width:20px; height:2px; margin-top:-1px; border-radius:2px; background: linear-gradient(90deg, rgba(var(--ds-ok), .9), rgba(var(--ds-ok), .15)); }
+.chgbox.beside::before { content:""; position:absolute; right:-28px; top:50%; width:6px; height:6px; margin-top:-3px; border-radius:50%; background: rgba(var(--ds-ok), .35); border:1.5px solid rgb(var(--ds-ok)); box-sizing:border-box; }
 .chgline { position:absolute; z-index:8; left: calc(50% + 29.8% * var(--ds-scale, 1.2)); top:74px; width:0; height: max(0px, calc(50% - 7.9% * var(--ds-scale, 1.2) - 84px)); border-left:1.5px dashed rgba(var(--ds-ok), .75); filter: drop-shadow(0 0 3px rgba(var(--ds-ok), .6)); }
 .chgline.s-text, .chgline.s-big, .chgline.s-beside { display:none; }
 .chgbox[hidden], .chgline[hidden] { display:none; }
@@ -1391,6 +1394,13 @@ ha-card:has(.sheet.show) *:not(.sheet):not(.sheet *), ha-card.off *, ha-card.off
 @media (min-width:640px) { .sheet { align-items:center; } }
 .box { width:100%; max-width:560px; max-height:70%; min-height:min(300px, 100%); box-sizing:border-box; display:flex; flex-direction:column; padding:16px 14px 12px; border-radius:24px; background: var(--ha-card-background, var(--card-background-color, #222)); border:1px solid var(--ds-line); animation: ds-up .42s cubic-bezier(.22,.8,.3,1); overflow:hidden; }
 .box.wide { overflow:hidden; max-height:94%; } .box.confirm { min-height:0; }
+/* κινητό: το παράθυρο επιβεβαίωσης δεν κολλάει στο κάτω άκρο (κάτω μπάρα/χειρονομίες) – ανεβαίνει και τα κουμπιά μεγαλώνουν */
+@media (max-width:639px) {
+  .sheet:has(.box.confirm) { padding-bottom: calc(max(10px, env(safe-area-inset-bottom, 0px)) + 84px); }
+  .box.confirm { padding-bottom:16px; }
+  .box.confirm h3 { font-size:18px; } .box.confirm p.c { font-size:14px; margin:8px 0 16px; }
+  .box.confirm .btnrow { gap:10px; } .box.confirm .btn { min-height:54px; font-size:16px; border-radius:16px; }
+}
 .box h3 { margin:0; font-size:16px; font-weight:600; color: var(--ds-fg); } .box p.c { margin:6px 0 12px; font-size:13px; color: var(--ds-fg2); text-align:center; }
 .confirm { text-align:center; }
 .hd { flex:none; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
@@ -1860,8 +1870,6 @@ class DeepalS05Card extends HTMLElement {
     const rs = TIRES.map((t) => this._tire(t)), vals = rs.map((r) => r.bar).filter((x) => x !== null);
     const unit = this._c.tire_unit, f = (b) => (unit === "kPa" ? Math.round(b * 100) : unit === "psi" ? (b / 0.0689476).toFixed(1) : b.toFixed(2));
     const bad = rs.some((r) => r.alarm), warn = rs.some((r) => r.note);
-    const open = OPEN_ITEMS.filter(([k]) => this._is(k, "on"));
-    if (!bad && !warn && open.length) return { sub: T("{0} ανοιχτά", open.length), tone: "warn" };
     return { sub: bad ? "συναγερμός" : warn ? "έλεγξε πίεση" : vals.length ? `${f(Math.min(...vals))} ${unit} min` : "--", tone: bad ? "bad" : warn ? "warn" : "" };
   }
   _onAction(id) {
@@ -2122,17 +2130,21 @@ class DeepalS05Card extends HTMLElement {
     return `<div class="ipane"><img data-l="base" src="${esc(B)}base.webp" alt="">${INT_LAYERS.map((n) => `<img class="l" data-l="${n}" src="${esc(B + n)}.webp" alt="">`).join("")}${btns}</div>`;
   }
 
+  _layerOn(im, [, , fn, op]) { const on = !!fn(); im.classList.toggle("on", on); im.style.opacity = on && op != null ? String(op) : ""; }
   /* Λίστα layers Car View [όνομα, φάκελος, συνθήκη] με τη σειρά του repo dec_deepal (πίσω από το αμάξι → αμάξι → μπροστά) */
   _isoLayers(color, wheels) {
     const out = [];
-    const L = (dir, name, fn) => { out.push([name, dir, fn]); };
+    const L = (dir, name, fn, op) => { out.push([name, dir, fn, op]); };
     const dk = (p, sd) => `binary_sensor.${p}_${sd}_door`, wk = (p, sd) => `binary_sensor.${p}_${sd}_window_open`;
-    const door = (p, sd) => { const d = () => this._is(dk(p, sd), "on"), w = () => this._is(wk(p, sd), "on"); L("common", `window_${p}_${sd}_closed`, () => !w() && !d()); L("common", `window_${p}_${sd}_closed_door_open`, () => !w() && d()); L(color, `door_${p}_${sd}_open`, d); L(color, `door_${p}_${sd}_closed`, () => !d()); };
+    const door = (p, sd) => { const d = () => this._is(dk(p, sd), "on"), w = () => this._is(wk(p, sd), "on"); L("common", `window_${p}_${sd}_closed`, () => !w() && !d()); L("common", `window_${p}_${sd}_closed_door_open`, () => !w() && d()); L("common", `window_${p}_${sd}_alert`, () => w() && !d()); L("common", `window_${p}_${sd}_alert_door_open`, () => w() && d()); L(color, `door_${p}_${sd}_open`, d); L(color, `door_${p}_${sd}_closed`, () => !d()); };
     const trunk = () => this._is("binary_sensor.trunk", "on"), hood = () => this._is("binary_sensor.hood", "on");
     door("rear", "right"); door("front", "right"); L(color, "trunk_closed", () => !trunk());
     L(color, "base", () => true); if (wheels) L("common", "wheels_" + wheels, () => true);
     L(color, "trunk_open", trunk); L(color, "hood_open", hood); L(color, "hood_closed", () => !hood());
-    door("rear", "left"); door("front", "left"); L("common", "low_beam_on", () => this._is("binary_sensor.low_beam", "on"));
+    door("rear", "left"); door("front", "left");
+    /* Τα παράθυρα της απέναντι πλευράς κρύβονται πίσω από το αμάξι· όταν είναι ανοιχτά ζωγραφίζονται κόκκινα ΠΑΝΩ στο αμάξι, ημιδιάφανα, σαν να φαίνονται μέσα από τα τζάμια */
+    for (const p of ["front", "rear"]) { const d = () => this._is(dk(p, "right"), "on"), w = () => this._is(wk(p, "right"), "on"); L("common", `window_${p}_right_alert`, () => w() && !d(), FAR_ALERT); L("common", `window_${p}_right_alert_door_open`, () => w() && d(), FAR_ALERT); }
+    L("common", "low_beam_on", () => this._is("binary_sensor.low_beam", "on"));
     return out;
   }
 
@@ -2155,7 +2167,7 @@ class DeepalS05Card extends HTMLElement {
       if (base) base.addEventListener("error", () => { this._cvFail = true; this._force && this._force(); }, { once: true }); // faltan τα layers: γύρνα στις φωτογραφίες
     }
     el.hero.style.setProperty("--ds-cvs", String(Math.max(0.5, Math.min(2, (Number(c.image_scale) || 1.2) / 1.2) * 1.08)));
-    this._cvImgs.forEach((im, i) => im.classList.toggle("on", !!this._cvL[i][2]()));
+    this._cvImgs.forEach((im, i) => this._layerOn(im, this._cvL[i]));
     const plug = v.charging || v.plugged;
     el.cv.classList.toggle("chg", plug);
     el.cvb.querySelector('img[data-n="cable_connected"]').classList.toggle("on", plug && !v.charging);
@@ -2178,7 +2190,7 @@ class DeepalS05Card extends HTMLElement {
       el.vmiss.hidden = true;
       if (base) base.addEventListener("error", () => { el.vmiss.hidden = false; const p = el.viso.querySelector(".isop"); if (p) p.classList.add("noimg"); }, { once: true });
     }
-    this._isoImgs.forEach((im, i) => im.classList.toggle("on", !!this._isoL[i][2]()));
+    this._isoImgs.forEach((im, i) => this._layerOn(im, this._isoL[i]));
     const notes = [];
     TIRES.forEach((t) => {
       const r = this._tire(t), g = el.viso.querySelector(`.tp[data-t="${t.id}"]`); if (!g) return;

@@ -345,8 +345,6 @@ class DeepalS05Card extends HTMLElement {
     const rs = TIRES.map((t) => this._tire(t)), vals = rs.map((r) => r.bar).filter((x) => x !== null);
     const unit = this._c.tire_unit, f = (b) => (unit === "kPa" ? Math.round(b * 100) : unit === "psi" ? (b / 0.0689476).toFixed(1) : b.toFixed(2));
     const bad = rs.some((r) => r.alarm), warn = rs.some((r) => r.note);
-    const open = OPEN_ITEMS.filter(([k]) => this._is(k, "on"));
-    if (!bad && !warn && open.length) return { sub: T("{0} ανοιχτά", open.length), tone: "warn" };
     return { sub: bad ? "συναγερμός" : warn ? "έλεγξε πίεση" : vals.length ? `${f(Math.min(...vals))} ${unit} min` : "--", tone: bad ? "bad" : warn ? "warn" : "" };
   }
   _onAction(id) {
@@ -607,17 +605,21 @@ class DeepalS05Card extends HTMLElement {
     return `<div class="ipane"><img data-l="base" src="${esc(B)}base.webp" alt="">${INT_LAYERS.map((n) => `<img class="l" data-l="${n}" src="${esc(B + n)}.webp" alt="">`).join("")}${btns}</div>`;
   }
 
+  _layerOn(im, [, , fn, op]) { const on = !!fn(); im.classList.toggle("on", on); im.style.opacity = on && op != null ? String(op) : ""; }
   /* Λίστα layers Car View [όνομα, φάκελος, συνθήκη] με τη σειρά του repo dec_deepal (πίσω από το αμάξι → αμάξι → μπροστά) */
   _isoLayers(color, wheels) {
     const out = [];
-    const L = (dir, name, fn) => { out.push([name, dir, fn]); };
+    const L = (dir, name, fn, op) => { out.push([name, dir, fn, op]); };
     const dk = (p, sd) => `binary_sensor.${p}_${sd}_door`, wk = (p, sd) => `binary_sensor.${p}_${sd}_window_open`;
-    const door = (p, sd) => { const d = () => this._is(dk(p, sd), "on"), w = () => this._is(wk(p, sd), "on"); L("common", `window_${p}_${sd}_closed`, () => !w() && !d()); L("common", `window_${p}_${sd}_closed_door_open`, () => !w() && d()); L(color, `door_${p}_${sd}_open`, d); L(color, `door_${p}_${sd}_closed`, () => !d()); };
+    const door = (p, sd) => { const d = () => this._is(dk(p, sd), "on"), w = () => this._is(wk(p, sd), "on"); L("common", `window_${p}_${sd}_closed`, () => !w() && !d()); L("common", `window_${p}_${sd}_closed_door_open`, () => !w() && d()); L("common", `window_${p}_${sd}_alert`, () => w() && !d()); L("common", `window_${p}_${sd}_alert_door_open`, () => w() && d()); L(color, `door_${p}_${sd}_open`, d); L(color, `door_${p}_${sd}_closed`, () => !d()); };
     const trunk = () => this._is("binary_sensor.trunk", "on"), hood = () => this._is("binary_sensor.hood", "on");
     door("rear", "right"); door("front", "right"); L(color, "trunk_closed", () => !trunk());
     L(color, "base", () => true); if (wheels) L("common", "wheels_" + wheels, () => true);
     L(color, "trunk_open", trunk); L(color, "hood_open", hood); L(color, "hood_closed", () => !hood());
-    door("rear", "left"); door("front", "left"); L("common", "low_beam_on", () => this._is("binary_sensor.low_beam", "on"));
+    door("rear", "left"); door("front", "left");
+    /* Τα παράθυρα της απέναντι πλευράς κρύβονται πίσω από το αμάξι· όταν είναι ανοιχτά ζωγραφίζονται κόκκινα ΠΑΝΩ στο αμάξι, ημιδιάφανα, σαν να φαίνονται μέσα από τα τζάμια */
+    for (const p of ["front", "rear"]) { const d = () => this._is(dk(p, "right"), "on"), w = () => this._is(wk(p, "right"), "on"); L("common", `window_${p}_right_alert`, () => w() && !d(), FAR_ALERT); L("common", `window_${p}_right_alert_door_open`, () => w() && d(), FAR_ALERT); }
+    L("common", "low_beam_on", () => this._is("binary_sensor.low_beam", "on"));
     return out;
   }
 
@@ -640,7 +642,7 @@ class DeepalS05Card extends HTMLElement {
       if (base) base.addEventListener("error", () => { this._cvFail = true; this._force && this._force(); }, { once: true }); // faltan τα layers: γύρνα στις φωτογραφίες
     }
     el.hero.style.setProperty("--ds-cvs", String(Math.max(0.5, Math.min(2, (Number(c.image_scale) || 1.2) / 1.2) * 1.08)));
-    this._cvImgs.forEach((im, i) => im.classList.toggle("on", !!this._cvL[i][2]()));
+    this._cvImgs.forEach((im, i) => this._layerOn(im, this._cvL[i]));
     const plug = v.charging || v.plugged;
     el.cv.classList.toggle("chg", plug);
     el.cvb.querySelector('img[data-n="cable_connected"]').classList.toggle("on", plug && !v.charging);
@@ -663,7 +665,7 @@ class DeepalS05Card extends HTMLElement {
       el.vmiss.hidden = true;
       if (base) base.addEventListener("error", () => { el.vmiss.hidden = false; const p = el.viso.querySelector(".isop"); if (p) p.classList.add("noimg"); }, { once: true });
     }
-    this._isoImgs.forEach((im, i) => im.classList.toggle("on", !!this._isoL[i][2]()));
+    this._isoImgs.forEach((im, i) => this._layerOn(im, this._isoL[i]));
     const notes = [];
     TIRES.forEach((t) => {
       const r = this._tire(t), g = el.viso.querySelector(`.tp[data-t="${t.id}"]`); if (!g) return;

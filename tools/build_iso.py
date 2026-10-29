@@ -43,3 +43,15 @@ for cid, name in COLORS.items():
         save(f"{src}/{cid}/{n}.png", f"{out}/{name}/{n}.webp", tone=(name == "black"))
 for n in COMMON:
     save(f"{src}/{n}.png", f"{out}/common/{n}.webp")
+
+def alert(a, b, rgb=(239, 68, 68), k=0.7):
+    """Red copy of a window glass layer, used when that window is open: same shape, solid warning colour, alpha scaled by k."""
+    im = np.array(Image.open(a).convert("RGBA")).astype(np.float64)
+    im[..., :3] = rgb
+    im[..., 3] = np.clip(im[..., 3] * k, 0, 255)
+    Image.fromarray(im.round().astype(np.uint8), "RGBA").save(b, "WEBP", quality=88, alpha_quality=100, method=6)
+
+for p in ("front", "rear"):
+    for s in ("left", "right"):
+        for x in ("", "_door_open"):
+            alert(f"{src}/window_{p}_{s}_closed{x}.png", f"{out}/common/window_{p}_{s}_alert{x}.webp")

@@ -30,7 +30,7 @@ It works with the [Deepal Alternative](https://github.com/Sunek0/ha-deepal-alter
 - Round control buttons: lock, windows, trunk, climate, tyres, interior, flash lights, horn, find car — layout, labels, size, order and visibility are configurable.
 - Range, battery (and fuel for PHEV) rings; the battery ring animates while charging.
 - Charging status: current, time remaining and type as text next to the charge port (4 styles), plus an optional animated effect on the car (cable flow / charge-port pulse / light sweep).
-- **Car View** popup: a real 3/4 render of the car in five colours with live doors, bonnet, tailgate, windows and lights, and the four tyre pressures connected to their wheels (green OK / red alert).
+- **Car View** popup: a real 3/4 render of the car in five colours with live doors, bonnet, tailgate, windows (open ones in red) and lights, and the four tyre pressures connected to their wheels (green OK / red alert).
 - Climate popup with a temperature picker and animated airflow coloured by the target temperature, plus seat heating/ventilation and steering-wheel heating.
 - Diagnostics shown as large, status-coloured dashboard icons (airbag, ABS, brakes, tyres, 12 V battery…). Tap “+N” for the full list of sensors; new sensors can be discovered with one button.
 - Custom info tiles: add any sensor.

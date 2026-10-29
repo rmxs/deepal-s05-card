@@ -12,6 +12,7 @@ const smoothPath = (p) => {
 };
 const CHG_D = smoothPath(CHG_PTS);
 /* Όψη φόρτισης Car View (750×500, dec_deepal vista_carga): καλώδιο από το έδαφος προς το φις, και θέση της θύρας */
+const FAR_ALERT = 0.55; // αδιαφάνεια του κόκκινου στα παράθυρα της απέναντι πλευράς
 const CARGA_PTS = [[705, 370], [677, 365], [640, 359], [613, 353], [597, 347], [588, 338], [583, 325], [580, 310], [578, 295], [576, 278], [574, 262], [572, 248], [570, 238]];
 const CARGA_PORT = [566, 236];
 const CARGA_D = smoothPath(CARGA_PTS);
@@ -481,7 +482,9 @@ ${BASE_CSS}
 .chgbox.text, .chgbox.big { top:46px; left: min(calc(50% + 29.8% * var(--ds-scale, 1.2) - 16px), calc(100% - 20px)); }
 .chgbox.big .a { font-size:34px; font-weight:800; line-height:1; } .chgbox.big .a small { font-size:16px; font-weight:700; margin-left:2px; }
 .chgbox.beside { top: calc(50% - 7.9% * var(--ds-scale, 1.2) - 10px); transform: translate(-100%, -50%); left: calc(50% + 29.8% * var(--ds-scale, 1.2) - 24px); }
-.chgbox.beside::after { content:""; position:absolute; right:-20px; top:50%; width:16px; border-top:1.5px dashed rgba(var(--ds-ok), .8); }
+/* ο οδηγός του κειμένου δεν είναι διακεκομμένος: ώστε να μη μοιάζει με τα διακεκομμένα της ροής στο καλώδιο */
+.chgbox.beside::after { content:""; position:absolute; right:-24px; top:50%; width:20px; height:2px; margin-top:-1px; border-radius:2px; background: linear-gradient(90deg, rgba(var(--ds-ok), .9), rgba(var(--ds-ok), .15)); }
+.chgbox.beside::before { content:""; position:absolute; right:-28px; top:50%; width:6px; height:6px; margin-top:-3px; border-radius:50%; background: rgba(var(--ds-ok), .35); border:1.5px solid rgb(var(--ds-ok)); box-sizing:border-box; }
 .chgline { position:absolute; z-index:8; left: calc(50% + 29.8% * var(--ds-scale, 1.2)); top:74px; width:0; height: max(0px, calc(50% - 7.9% * var(--ds-scale, 1.2) - 84px)); border-left:1.5px dashed rgba(var(--ds-ok), .75); filter: drop-shadow(0 0 3px rgba(var(--ds-ok), .6)); }
 .chgline.s-text, .chgline.s-big, .chgline.s-beside { display:none; }
 .chgbox[hidden], .chgline[hidden] { display:none; }
@@ -501,6 +504,13 @@ ha-card:has(.sheet.show) *:not(.sheet):not(.sheet *), ha-card.off *, ha-card.off
 @media (min-width:640px) { .sheet { align-items:center; } }
 .box { width:100%; max-width:560px; max-height:70%; min-height:min(300px, 100%); box-sizing:border-box; display:flex; flex-direction:column; padding:16px 14px 12px; border-radius:24px; background: var(--ha-card-background, var(--card-background-color, #222)); border:1px solid var(--ds-line); animation: ds-up .42s cubic-bezier(.22,.8,.3,1); overflow:hidden; }
 .box.wide { overflow:hidden; max-height:94%; } .box.confirm { min-height:0; }
+/* κινητό: το παράθυρο επιβεβαίωσης δεν κολλάει στο κάτω άκρο (κάτω μπάρα/χειρονομίες) – ανεβαίνει και τα κουμπιά μεγαλώνουν */
+@media (max-width:639px) {
+  .sheet:has(.box.confirm) { padding-bottom: calc(max(10px, env(safe-area-inset-bottom, 0px)) + 84px); }
+  .box.confirm { padding-bottom:16px; }
+  .box.confirm h3 { font-size:18px; } .box.confirm p.c { font-size:14px; margin:8px 0 16px; }
+  .box.confirm .btnrow { gap:10px; } .box.confirm .btn { min-height:54px; font-size:16px; border-radius:16px; }
+}
 .box h3 { margin:0; font-size:16px; font-weight:600; color: var(--ds-fg); } .box p.c { margin:6px 0 12px; font-size:13px; color: var(--ds-fg2); text-align:center; }
 .confirm { text-align:center; }
 .hd { flex:none; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }

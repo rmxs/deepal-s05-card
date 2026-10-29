@@ -1,5 +1,41 @@
 # Changelog
 
+## 1.3.1
+
+Open windows in red. · Ανοιχτά παράθυρα με κόκκινο. · Ventanillas abiertas en rojo.
+
+**Changed**
+
+- In the Car View (popup and hero) an open window is now drawn in red, so you can see which windows are open at a glance. Windows on the far side of the car, which the body hides, show as a translucent red patch seen through the glass. Closed windows look as before.
+- The **Tyres** button now reports only the tyres (lowest pressure, or a warning). It used to show “N open” when doors or windows were open; that is still shown by the Windows button, the status line on the hero and the Car View.
+- On phones the confirmation sheet (unlock, lock, …) sits higher, clear of the bottom bar, and its buttons are bigger.
+- With the *beside* charge text, the guide next to the time is now a solid line with a ring instead of dashes, so it no longer looks like the dashed flow on the cable.
+- Tyre pressures in bar now show two decimals (`2.55 bar`), in the Car View and in the Tyres summary, matching the limits in Settings. Thanks to @Sunek0 (#3).
+
+<details><summary>Ελληνικά</summary>
+
+**Αλλαγές**
+
+- Στο Car View (popup και hero) ένα ανοιχτό παράθυρο ζωγραφίζεται πλέον κόκκινο, ώστε να φαίνεται με μια ματιά ποια παράθυρα είναι ανοιχτά. Τα παράθυρα της απέναντι πλευράς, που τα κρύβει το αμάξι, φαίνονται ως ημιδιάφανο κόκκινο σημείο μέσα από τα τζάμια. Τα κλειστά φαίνονται όπως πριν.
+- Το κουμπί **Ελαστικά** δείχνει πλέον μόνο τα ελαστικά (χαμηλότερη πίεση ή προειδοποίηση). Πριν έγραφε «N ανοιχτά» όταν υπήρχαν ανοιχτές πόρτες ή παράθυρα· αυτό φαίνεται ακόμα στο κουμπί Παράθυρα, στη γραμμή κατάστασης του hero και στο Car View.
+- Στο κινητό το παράθυρο επιβεβαίωσης (ξεκλείδωμα, κλείδωμα, …) είναι πιο ψηλά, μακριά από την κάτω μπάρα, και τα κουμπιά του μεγαλύτερα.
+- Με το κείμενο φόρτισης *beside*, ο οδηγός δίπλα στην ώρα είναι πλέον συμπαγής γραμμή με δαχτυλίδι αντί για παύλες, ώστε να μη μοιάζει με τις διακεκομμένες της ροής στο καλώδιο.
+- Οι πιέσεις των ελαστικών σε bar δείχνουν πλέον δύο δεκαδικά (`2.55 bar`), στο Car View και στη σύνοψη Ελαστικών, όπως τα όρια στις Ρυθμίσεις. Ευχαριστώ τον @Sunek0 (#3).
+
+</details>
+
+<details><summary>Español</summary>
+
+**Cambios**
+
+- En el Car View (ventana y hero) una ventanilla abierta se dibuja ahora en rojo, para ver de un vistazo cuáles están abiertas. Las ventanillas del lado opuesto, que la carrocería oculta, se ven como una mancha roja translúcida a través del cristal. Las cerradas se ven como antes.
+- El botón **Neumáticos** informa ahora solo de los neumáticos (presión más baja o un aviso). Antes mostraba «N abiertas» cuando había puertas o ventanillas abiertas; eso se sigue viendo en el botón Ventanillas, en la línea de estado del hero y en el Car View.
+- En el móvil la hoja de confirmación (abrir, cerrar, …) queda más arriba, libre de la barra inferior, y sus botones son más grandes.
+- Con el texto de carga *beside*, la guía junto a la hora es ahora una línea continua con un anillo en vez de guiones, para que no se parezca a los guiones del flujo del cable.
+- Las presiones de los neumáticos en bar muestran ahora dos decimales (`2.55 bar`), en el Car View y en el resumen de Neumáticos, como los límites en Ajustes. Gracias a @Sunek0 (#3).
+
+</details>
+
 ## 1.3.0
 
 Car View hero and a new Vehicle tab. · Hero Car View και νέα καρτέλα Όχημα. · Hero Car View y nueva pestaña Vehículo.
