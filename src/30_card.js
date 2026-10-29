@@ -343,7 +343,7 @@ class DeepalS05Card extends HTMLElement {
   }
   _tiresSummary() {
     const rs = TIRES.map((t) => this._tire(t)), vals = rs.map((r) => r.bar).filter((x) => x !== null);
-    const unit = this._c.tire_unit, f = (b) => (unit === "kPa" ? Math.round(b * 100) : unit === "psi" ? (b / 0.0689476).toFixed(1) : b.toFixed(1));
+    const unit = this._c.tire_unit, f = (b) => (unit === "kPa" ? Math.round(b * 100) : unit === "psi" ? (b / 0.0689476).toFixed(1) : b.toFixed(2));
     const bad = rs.some((r) => r.alarm), warn = rs.some((r) => r.note);
     const open = OPEN_ITEMS.filter(([k]) => this._is(k, "on"));
     if (!bad && !warn && open.length) return { sub: T("{0} ανοιχτά", open.length), tone: "warn" };
@@ -808,7 +808,7 @@ class DeepalS05Card extends HTMLElement {
     }
     if (alarm && veh) { tone = "var(--ds-bad)"; note = "συναγερμός"; }
     const unit = c.tire_unit;
-    const txt = bar === null ? "--" : unit === "kPa" ? `${Math.round(bar * 100)}` : unit === "psi" ? `${(bar / 0.0689476).toFixed(1)}` : bar.toFixed(1);
+    const txt = bar === null ? "--" : unit === "kPa" ? `${Math.round(bar * 100)}` : unit === "psi" ? `${(bar / 0.0689476).toFixed(1)}` : bar.toFixed(2);
     return { txt: `${txt}${bar === null ? "" : " " + unit}`, tone, note, stale, alarm: alarm && veh, name: t.name, bar };
   }
 

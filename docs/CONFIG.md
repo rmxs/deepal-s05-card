@@ -52,7 +52,7 @@ name: Deepal S05
 | `iso_wheels` | `cover` | Wheels in the Car View: `cover` (20″ with covers), `open` (20″ without) or `pro` (18″). |
 | `air_t1` / `air_t2` | `22` / `24` | Climate airflow colour limits (°C of the target): up to `t1` cool, up to `t2` mild, above warm. |
 | `air_c1` / `air_c2` / `air_c3` | `#8ec5ff` / `#ffcc3d` / `#ff7a2e` | Airflow colours: cool, mild, warm. |
-| `tire_unit` | `bar` | `bar`, `kPa`, `psi`. |
+| `tire_unit` | `bar` | `bar`, `kPa`, `psi`. Pressures use two decimals for bar, one for psi and none for kPa, matching the limits in Settings. |
 | `tire_min` / `tire_max` | `2.0` / `3.5` | Pressure range (bar) considered normal; used when `tire_check` is `limits` or `both`. |
 | `tire_check` | `vehicle` | What marks a tyre as not OK: `vehicle` (the car's own alerts), `limits` (your min/max) or `both`. |
 | `climate_on_mode` | auto | HVAC mode used to turn the climate on (default: detected from the entity). |
