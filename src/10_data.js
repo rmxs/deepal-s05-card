@@ -15,6 +15,10 @@ const CHG_D = smoothPath(CHG_PTS);
 const FAR_ALERT = 0.55; // αδιαφάνεια του κόκκινου στα παράθυρα της απέναντι πλευράς
 const CARGA_PTS = [[705, 370], [677, 365], [640, 359], [613, 353], [597, 347], [588, 338], [583, 325], [580, 310], [578, 295], [576, 278], [574, 262], [572, 248], [570, 238]];
 const CARGA_PORT = [566, 236];
+const CV_ASPECT = "7 / 5"; // λόγος διαστάσεων του hero στο Car View (ψηλότερος από 16 / 9): το αμάξι μένει στο κέντρο με αέρα γύρω του
+/* Χειρολαβές που ανάβουν κεχριμπαρένιες όταν το όχημα είναι ξεκλείδωτο: [πόρτα, x, y, γωνία] στις συντεταγμένες των layers (3/4: 750×500, μόνο η ορατή πλευρά· από πάνω: 750×750, και οι 4 πόρτες) */
+const HDL_ISO = [["front_left", 505, 207, -12], ["rear_left", 577, 191.5, -12]];
+const HDL_TOP = [["front_left", 266, 395], ["rear_left", 266, 515], ["front_right", 484, 395], ["rear_right", 484, 515]];
 const CARGA_D = smoothPath(CARGA_PTS);
 const OPEN_ITEMS = [
   ["binary_sensor.front_left_door", "Εμπρός αριστερή πόρτα"],
@@ -203,11 +207,23 @@ ${BASE_CSS}
 .cva::before, .cvb::before { content:""; position:absolute; pointer-events:none; background: radial-gradient(ellipse at center, rgba(0,0,0,.72), rgba(0,0,0,.3) 45%, transparent 72%); filter: blur(6px); }
 .cva::before { left:12%; right:8%; top:68%; height:14%; }
 .cvb::before { left:11%; right:20%; top:64%; height:12%; }
-.cvi { position:absolute; left:50%; top:50%; width:100%; aspect-ratio: 750 / 500; transform-origin: 51.5% 52.7%; transform: translate(-51.5%, -52.7%) scale(var(--ds-cvs, 1.08)); } /* το κέντρο του αμαξιού (386,263 στα 750×500) πάει στο κέντρο του hero και η μεγέθυνση γίνεται γύρω από αυτό */
+.cvi { position:absolute; left:50%; top:50%; width:100%; aspect-ratio: 750 / 500; transform-origin: 50.93% 50.3%; transform: translate(-50.93%, -50.3%) scale(var(--ds-cvs, 1.08)); } /* το ορατό κέντρο του αμαξιού (382,251.5 στα 750×500) πάει ακριβώς στο κέντρο του hero και η μεγέθυνση γίνεται γύρω από αυτό */
+.cvi[hidden], .cvt[hidden] { display:none; }
+.cvi:not([hidden]), .cvt:not([hidden]) { animation: ds-fade .4s ease-out; }
+/* Από πάνω: το αμάξι (layers 750×750, κέντρο 359.5,385.5) γυρίζει 90° ώστε να κοιτάει αριστερά σαν το 3/4 και να γεμίζει το πλατύ hero */
+.cvt { position:absolute; left:50%; top:50%; width: calc(100% * var(--ds-tvs, .96)); aspect-ratio:1; transform-origin: 49.93% 51.2%; transform: translate(-49.93%, -51.2%) rotate(-90deg); } /* ορατό κέντρο του αμαξιού (374.5,384 στα 750×750) στο κέντρο του hero */
+.cvt::before { content:""; position:absolute; inset:5% 24% 3%; pointer-events:none; background: radial-gradient(ellipse at center, rgba(0,0,0,.6), rgba(0,0,0,.28) 48%, transparent 72%); filter: blur(10px); }
+.cvt img { position:absolute; inset:0; width:100%; height:100%; opacity:0; transition: opacity .3s ease; }
+.cvt img.on { opacity:1; }
 .cva, .cvb { position:absolute; inset:0; transition: opacity .6s ease; }
-.cvb { opacity:0; transform: translate(2.5%, 5.9%); } /* η διάφανη όψη έχει άλλο κάδρο: μετατοπίζεται ώστε το αμάξι να μένει στο ίδιο κέντρο */ .hcv.chg .cva { opacity:0; } .hcv.chg .cvb { opacity:1; }
+.cvb { opacity:0; transform: translate(2%, 3.5%); } /* η διάφανη όψη έχει άλλο κάδρο: μετατοπίζεται ώστε το αμάξι να μένει στο ίδιο κέντρο */ .hcv.chg .cva { opacity:0; } .hcv.chg .cvb { opacity:1; }
 .cva img, .cvb > img:not(.sweep) { position:absolute; inset:0; width:100%; height:100%; opacity:0; transition: opacity .35s ease; }
 .cva img.on, .cvb > img.on:not(.sweep) { opacity:1; }
+/* Ξεκλείδωτο: οι χειρολαβές ανάβουν (κεχριμπαρένιες, με απαλή παλμική λάμψη) */
+.hdl { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; opacity:0; transition: opacity .4s ease; filter: drop-shadow(0 0 2px rgba(var(--ds-warn), .95)) drop-shadow(0 0 7px rgba(var(--ds-warn), .6)); }
+.hero.unlocked .hdl { opacity:1; }
+.hdl rect { fill: rgb(var(--ds-warn)); animation: ds-hdl 2.4s ease-in-out infinite; } .hdl rect.off { display:none; }
+@keyframes ds-hdl { 0%, 100% { opacity:.72; } 50% { opacity:1; } }
 .cvb > svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
 .cvb path, .cvb circle { fill:none; visibility:hidden; }
 .cvb .cb { stroke-width:5.6; filter: blur(2.4px); }
@@ -331,7 +347,7 @@ ${BASE_CSS}
 .t2 .lg small { color: var(--ds-fg2); font-size: 11.5px; }
 /* πλακίδιο Κλιματισμός: θερμοκρασία μέσα, στόχος με ± και κουμπί on/off */
 .t2.temp { display:grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr auto; align-items:start; min-height:132px; }
-.t2.temp .tt { grid-column:1; grid-row:1; align-self:center; }
+.t2.temp .tt { grid-column:1; grid-row:1; align-self:start; } /* ίδιο ύψος τίτλου με το tile Ενέργεια (πριν ήταν 2px πιο κάτω λόγω του κουμπιού) */
 .tpw { --kc: var(--ds-info); grid-column:2; grid-row:1; position:relative; width:40px; height:40px; margin:-6px -8px 0 0; border-radius:50%; border:1px solid var(--ds-line); background: var(--ds-soft); display:grid; place-items:center; padding:0; cursor:pointer; color: var(--ds-fg2); -webkit-tap-highlight-color: transparent; transition: background .25s ease, color .25s ease, transform .14s ease, box-shadow .25s ease; }
 .tpw .i { --is:18px; } .tpw:active { transform: scale(.92); } .tpw[disabled] { opacity:.4; cursor:not-allowed; }
 .tpw.on { background: rgb(var(--kc)); border-color: transparent; color:#fff; box-shadow: 0 4px 14px rgba(var(--kc), .4); }
@@ -477,7 +493,7 @@ ${BASE_CSS}
 .chgbox { position:absolute; z-index:8; top:50px; left: min(calc(50% + 29.8% * var(--ds-scale, 1.2) + 1px), calc(100% - 20px)); transform: translateX(-100%); display:flex; flex-direction:column; align-items:flex-end; gap:1px; white-space:nowrap; text-align:right; font-variant-numeric: tabular-nums; color: rgb(var(--ds-ok)); text-shadow: 0 1px 7px rgba(0,0,0,.9), 0 0 14px rgba(var(--ds-ok), .4); }
 .chgbox .a { font-size:21px; font-weight:800; line-height:1.05; letter-spacing:-.01em; }
 .chgbox .b { font-size:12.5px; font-weight:600; } .chgbox .b em { font-style:normal; font-weight:500; opacity:.8; text-transform:lowercase; }
-.chgbox .c { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; opacity:.9; }
+.chgbox .c { font-size:11px; font-weight:700; letter-spacing:.08em; margin-right:-.08em; text-transform:uppercase; opacity:.9; } /* το αρνητικό margin ακυρώνει το κενό που αφήνει το letter-spacing μετά το τελευταίο γράμμα: το δεξί άκρο ευθυγραμμίζεται με τις άλλες γραμμές */
 .chgbox.line { flex-direction:row; align-items:center; gap:6px; font-size:13.5px; font-weight:700; } .chgbox .i { --is:15px; } .chgbox i { font-style:normal; opacity:.5; }
 .chgbox.text, .chgbox.big { top:46px; left: min(calc(50% + 29.8% * var(--ds-scale, 1.2) - 16px), calc(100% - 20px)); }
 .chgbox.big .a { font-size:34px; font-weight:800; line-height:1; } .chgbox.big .a small { font-size:16px; font-weight:700; margin-left:2px; }
@@ -485,9 +501,15 @@ ${BASE_CSS}
 /* ο οδηγός του κειμένου δεν είναι διακεκομμένος: ώστε να μη μοιάζει με τα διακεκομμένα της ροής στο καλώδιο */
 .chgbox.beside::after { content:""; position:absolute; right:-24px; top:50%; width:20px; height:2px; margin-top:-1px; border-radius:2px; background: linear-gradient(90deg, rgba(var(--ds-ok), .9), rgba(var(--ds-ok), .15)); }
 .chgbox.beside::before { content:""; position:absolute; right:-28px; top:50%; width:6px; height:6px; margin-top:-3px; border-radius:50%; background: rgba(var(--ds-ok), .35); border:1.5px solid rgb(var(--ds-ok)); box-sizing:border-box; }
-.chgline { position:absolute; z-index:8; left: calc(50% + 29.8% * var(--ds-scale, 1.2)); top:74px; width:0; height: max(0px, calc(50% - 7.9% * var(--ds-scale, 1.2) - 84px)); border-left:1.5px dashed rgba(var(--ds-ok), .75); filter: drop-shadow(0 0 3px rgba(var(--ds-ok), .6)); }
+.chgline { position:absolute; z-index:8; left: calc(50% + 29.8% * var(--ds-scale, 1.2)); top:74px; width:2px; margin-left:-1px; border-radius:2px; height: max(0px, calc(50% - 7.9% * var(--ds-scale, 1.2) - 84px)); background: linear-gradient(180deg, rgba(var(--ds-ok), .85), rgba(var(--ds-ok), .15)); filter: drop-shadow(0 0 3px rgba(var(--ds-ok), .6)); }
 .chgline.s-text, .chgline.s-big, .chgline.s-beside { display:none; }
 .chgbox[hidden], .chgline[hidden] { display:none; }
+/* Car View: η πρίζα είναι σε άλλο σημείο από τις φωτογραφίες και κινείται με το πλάτος και τη μεγέθυνση· το κείμενο φόρτισης δένεται πάνω της (cqw = 1% του πλάτους του hero) */
+.hero[data-style="carview"] { --ds-px: calc(50% + var(--ds-cvs, 1.08) * 26.47cqw); --ds-py: calc(50% + var(--ds-cvs, 1.08) * .27cqw); }
+.hero[data-style="carview"] .chgbox { top: calc(var(--ds-py) - 55px); left: min(calc(var(--ds-px) + 1px), calc(100% - 20px)); }
+.hero[data-style="carview"] .chgbox.text, .hero[data-style="carview"] .chgbox.big { top: calc(var(--ds-py) - 58px); left: min(calc(var(--ds-px) - 16px), calc(100% - 20px)); }
+.hero[data-style="carview"] .chgbox.beside { top: calc(var(--ds-py) - 10px); left: calc(var(--ds-px) - 24px); }
+.hero[data-style="carview"] .chgline { left: var(--ds-px); top: calc(var(--ds-py) - 37px); height: 27px; }
 .hero { container-type: inline-size; }
 @container (max-width: 370px) { .chgbox.line { font-size:12.5px; } .chgbox .a { font-size:18px; } .chgbox.big .a { font-size:28px; } }
 .charge { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; padding: 12px; border-radius:18px; border:1px solid rgba(var(--ds-ok), .28); background: linear-gradient(145deg, rgba(var(--ds-ok), .10), var(--ds-soft)); }
@@ -518,7 +540,7 @@ ha-card:has(.sheet.show) *:not(.sheet):not(.sheet *), ha-card.off *, ha-card.off
 .box deepal-s05-settings { flex:1 1 auto; min-height:0; display:block; overflow-y:auto; overflow-x:hidden; }
 @keyframes ds-up { from { transform: translateY(110%) } to { transform:none } }
 @keyframes ds-fade { from { opacity:0 } to { opacity:1 } }
-@media (prefers-reduced-motion: reduce) { .fx *, .act, .act .ring rect, .gauge .fp, .fxs *, .stage img, .bar b, .box, .l { animation: none !important; transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { .fx *, .act, .act .ring rect, .gauge .fp, .fxs *, .stage img, .bar b, .box, .l, .hdl rect { animation: none !important; transition: none !important; } }
 /* αριθμοί σταθερού πλάτους */
 .total .big, .gauge .c, .t2 .lg b, .t2 .ts b, .tile .v, .cur, .cv b, .tp .v, .picker, .pk * { font-variant-numeric: tabular-nums; }
 

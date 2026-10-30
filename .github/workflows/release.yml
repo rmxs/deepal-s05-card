@@ -2,6 +2,7 @@ name: Release
 
 # Creates a GitHub release automatically whenever CARD_VERSION in src/00_head.js
 # is bumped on main (tag = v<CARD_VERSION>). Notes come from CHANGELOG.md.
+# A version with a suffix (e.g. 1.4.0-beta.1) is published as a pre-release, so it is not offered as the latest version.
 on:
   push:
     branches: [main]
@@ -38,4 +39,6 @@ jobs:
           test -s notes.md || echo "Release $tag" > notes.md
           # ΣΗΜΑΝΤΙΚΟ: το release ΔΕΝ έχει συνημμένα αρχεία. Αν είχε το deepal-s05-card.js, το HACS θα κατέβαζε
           # μόνο αυτό (χωρίς τους φακέλους lang/ και images/). Χωρίς συνημμένα, κατεβάζει όλο το dist/.
-          gh release create "$tag" --target "$GITHUB_SHA" --title "$tag" --notes-file notes.md
+          pre=""
+          case "$v" in *-*) pre="--prerelease" ;; esac
+          gh release create "$tag" $pre --target "$GITHUB_SHA" --title "$tag" --notes-file notes.md

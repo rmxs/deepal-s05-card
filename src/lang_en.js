@@ -430,6 +430,12 @@
   "Φωτογραφίες (μαύρο)": "Photos (black)",
   "Car View (χρώματα)": "Car View (colours)",
   "Φωτογραφίες: οι μαύρες φωτογραφίες με τα εφέ φόρτισης. Car View: 3/4 render στο χρώμα που διαλέγεις, με ζωντανές πόρτες· στη φόρτιση εμφανίζεται η διάφανη όψη με τον φορτιστή.": "Photos: the black photos with the charging effects. Car View: a 3/4 render in the colour you choose, with live doors; while charging it switches to the translucent view with the charger.",
-  "Για την εικόνα Car View (popup οχήματος και, αν το διαλέξεις, hero).": "Used by the Car View image (vehicle popup and, if you choose it, the hero)."
+  "Για την εικόνα Car View (popup οχήματος και, αν το διαλέξεις, hero).": "Used by the Car View image (vehicle popup and, if you choose it, the hero).",
+  "Προβολή (Car View)": "View (Car View)",
+  "3/4": "3/4",
+  "Από πάνω": "Top",
+  "Η προβολή που ανοίγει η κάρτα. Με το κουμπί πάνω δεξιά στο hero αλλάζεις προβολή με ένα πάτημα, για τη συσκευή που το πάτησες· το διάλεγμα εδώ ξαναορίζει την προεπιλογή. Στη φόρτιση δείχνει πάντα η διάφανη όψη.": "The view the card opens with. The button at the top right of the hero switches the view with one tap, on the device you tapped it on; choosing here sets the default again. While charging, the translucent view is always shown.",
+  "Προβολή 3/4": "3/4 view",
+  "Προβολή από πάνω": "Top view"
  }
 };

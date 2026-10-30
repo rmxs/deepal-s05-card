@@ -183,6 +183,7 @@ class DeepalS05Settings extends HTMLElement {
       ${this._opt("Τύπος οχήματος", this._seg("powertrain", c.powertrain || "auto", [["auto", "Αυτόματα"], ["phev", "Plug-in υβριδικό"], ["ev", "Ηλεκτρικό"]]), "Το «Αυτόματα» βρίσκει τον τύπο από τους αισθητήρες καυσίμου.")}
       <h4>Εικόνα αμαξιού (hero)</h4>
       ${this._opt("Στυλ", this._seg("hero_style", c.hero_style === "carview" ? "carview" : "photo", [["photo", "Φωτογραφίες (μαύρο)"], ["carview", "Car View (χρώματα)"]]), "Φωτογραφίες: οι μαύρες φωτογραφίες με τα εφέ φόρτισης. Car View: 3/4 render στο χρώμα που διαλέγεις, με ζωντανές πόρτες· στη φόρτιση εμφανίζεται η διάφανη όψη με τον φορτιστή.")}
+      ${this._opt("Προβολή (Car View)", this._seg("hero_view", c.hero_view === "top" ? "top" : "iso", [["iso", "3/4"], ["top", "Από πάνω"]]), "Η προβολή που ανοίγει η κάρτα. Με το κουμπί πάνω δεξιά στο hero αλλάζεις προβολή με ένα πάτημα, για τη συσκευή που το πάτησες· το διάλεγμα εδώ ξαναορίζει την προεπιλογή. Στη φόρτιση δείχνει πάντα η διάφανη όψη.")}
       <div class="grid2"><label class="field">Μεγέθυνση εικόνας${this._num("image_scale", c.image_scale, "0.05")}</label>
         <label class="field">Λόγος διαστάσεων (π.χ. 16 / 9)<input type="text" data-set="image_aspect" data-text value="${esc(c.image_aspect || "")}" placeholder="auto"></label></div>
       <h4>Χρώμα αμαξιού</h4>

@@ -48,6 +48,7 @@ name: Deepal S05
 | `info_custom` | `[]` | Extra tiles: `{entity, label, icon, unit, tap_action, hold_action}`. |
 | `entities` | `{}` | Per-entity override, e.g. `sensor.battery_level: sensor.my_other_battery`. |
 | `hero_style` | `photo` | Hero image: `photo` (your photos from `images/car/`) or `carview` (live 3/4 render in the chosen `car_color`; while the charger is connected it switches to the translucent charging view with the cable and the `charge_fx` effects). |
+| `hero_view` | `iso` | View of the Car View hero: `iso` (3/4) or `top` (from above). The button in the hero switches it on that device; choosing it in *Settings → Vehicle → View* sets the default again. While the charger is connected the translucent charging view is shown. |
 | `car_color` | `black` | Colour of the car in the Car View (popup and, with `hero_style: carview`, the hero): `black`, `blue`, `grey`, `silver`, `white`. |
 | `iso_wheels` | `cover` | Wheels in the Car View: `cover` (20″ with covers), `open` (20″ without) or `pro` (18″). |
 | `air_t1` / `air_t2` | `22` / `24` | Climate airflow colour limits (°C of the target): up to `t1` cool, up to `t2` mild, above warm. |
@@ -60,7 +61,7 @@ name: Deepal S05
 | `layers_path` | `<card folder>/images/` | Folder with the `iso/` (Car View), `carga/` (charging view) and `interior/` layers. |
 | `images` | `{}` | Per-photo file name override. |
 | `image_scale` | `1.2` | Zoom of the hero image (photos or Car View, around the centre of the car). |
-| `image_aspect` | auto | Aspect ratio of the hero, e.g. `16 / 9`. |
+| `image_aspect` | auto | Aspect ratio of the hero, e.g. `16 / 9`. Default: the photo's own ratio; in the Car View hero `7 / 5`. |
 
 ## Tap and hold
 

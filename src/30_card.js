@@ -86,6 +86,7 @@ class DeepalS05Card extends HTMLElement {
   }
   _lsKey() { return `deepal-s05-card:${(this._yaml && this._yaml.prefix) || DEFAULTS.prefix}`; }
   _patch(p) {
+    if ("hero_view" in p) { this._hview = null; lsWrite(`deepal-s05-view:${this._c.prefix}`, null); } /* η επιλογή στις ρυθμίσεις ισχύει ξανά πάνω από το κουμπί της συσκευής */
     this._local = { ...(this._local || {}), ...p };
     lsWrite(this._lsKey(), this._local); this._saveYaml(); this._uiSave();
     const rebuild = Object.keys(p).some((k) => REBUILD_KEYS.includes(k));
@@ -605,7 +606,17 @@ class DeepalS05Card extends HTMLElement {
     return `<div class="ipane"><img data-l="base" src="${esc(B)}base.webp" alt="">${INT_LAYERS.map((n) => `<img class="l" data-l="${n}" src="${esc(B + n)}.webp" alt="">`).join("")}${btns}</div>`;
   }
 
-  _layerOn(im, [, , fn, op]) { const on = !!fn(); im.classList.toggle("on", on); im.style.opacity = on && op != null ? String(op) : ""; }
+  /* Τα layers δεν φορτώνονται όλα μαζί: το src μπαίνει μόνο όταν ένα layer χρειαστεί για πρώτη φορά (π.χ. «ανοιχτή πόρτα»). Και τα DOM writes γίνονται μόνο αν άλλαξε κάτι. */
+  _lazyOn(im, on) {
+    if (im._on === on) return;
+    im._on = on; im.classList.toggle("on", on);
+    if (on && !im.getAttribute("src") && im.dataset.src) im.setAttribute("src", im.dataset.src);
+  }
+  _layerOn(im, [, , fn, op]) {
+    const on = !!fn(), o = on && op != null ? String(op) : "";
+    this._lazyOn(im, on);
+    if (im._op !== o) { im._op = o; im.style.opacity = o; }
+  }
   /* Λίστα layers Car View [όνομα, φάκελος, συνθήκη] με τη σειρά του repo dec_deepal (πίσω από το αμάξι → αμάξι → μπροστά) */
   _isoLayers(color, wheels) {
     const out = [];
@@ -623,31 +634,107 @@ class DeepalS05Card extends HTMLElement {
     return out;
   }
 
+  /* Οι χειρολαβές του ξεκλείδωτου αμαξιού (SVG πάνω από τα layers)· κρύβονται όσο η πόρτα τους είναι ανοιχτή */
+  _hdlSvg(top) {
+    const r = top ? HDL_TOP.map(([k, x, y]) => `<rect data-d="${k}" x="${x - 2}" y="${y - 12}" width="4" height="24" rx="2"/>`) : HDL_ISO.map(([k, x, y, a]) => `<rect data-d="${k}" x="${x - 11}" y="${y - 2}" width="22" height="4" rx="2" transform="rotate(${a} ${x} ${y})"/>`);
+    return `<svg class="hdl" viewBox="0 0 750 ${top ? 750 : 500}" aria-hidden="true">${r.join("")}</svg>`;
+  }
+  _hdlSync(box) {
+    for (const r of box.querySelectorAll(".hdl rect")) { const [p, sd] = r.dataset.d.split("_"); r.classList.toggle("off", this._is(`binary_sensor.${p}_${sd}_door`, "on")); }
+  }
+
+  /* Προβολή από πάνω (vista_planta): layers 750×750 με τη σειρά του repo dec_deepal. Όλα τα layers που έχουν βαφή (και οι ανοιχτές πόρτες/καπό/πορτμπαγκάζ/παράθυρα) είναι στο χρώμα του αμαξιού· κοινά είναι μόνο τα φώτα. */
+  _topLayers(color) {
+    const out = [], L = (dir, name, fn) => { out.push([name, dir, fn]); };
+    const hood = () => this._is("binary_sensor.hood", "on"), trunk = () => this._is("binary_sensor.trunk", "on");
+    L(color, "base", () => true);
+    L(color, "hood_closed", () => !hood()); L(color, "hood_open", hood);
+    L(color, "trunk_closed", () => !trunk()); L(color, "trunk_open", trunk);
+    for (const p of ["front", "rear"]) for (const sd of ["left", "right"]) {
+      const d = () => this._is(`binary_sensor.${p}_${sd}_door`, "on");
+      L(color, `door_${p}_${sd}_closed`, () => !d()); L(color, `door_${p}_${sd}_open`, d);
+    }
+    for (const p of ["front", "rear"]) for (const sd of ["left", "right"]) {
+      const d = () => this._is(`binary_sensor.${p}_${sd}_door`, "on"), w = () => this._is(`binary_sensor.${p}_${sd}_window_open`, "on");
+      L(color, `window_${p}_${sd}_open`, () => w() && !d()); /* με το κόκκινο του ανοιχτού τζαμιού και το πλαίσιο της πόρτας στο χρώμα του αμαξιού */
+    }
+    L("common", "low_beam_on", () => this._is("binary_sensor.low_beam", "on"));
+    return out;
+  }
+  /* Ποια προβολή δείχνει το hero: η επιλογή της συσκευής (κουμπί) ή η προεπιλογή από τις ρυθμίσεις */
+  _heroView() {
+    if (this._hview === undefined) this._hview = lsRead(`deepal-s05-view:${this._c.prefix}`) || null;
+    return (this._hview || this._c.hero_view) === "top" ? "top" : "iso";
+  }
+  _toggleView() {
+    this._hview = this._heroView() === "top" ? "iso" : "top";
+    lsWrite(`deepal-s05-view:${this._c.prefix}`, this._hview);
+    this._force();
+  }
+
   /* Hero σε στυλ «Car View»: 3/4 render με ζωντανές πόρτες/καπό/πορτμπαγκάζ/παράθυρα/φώτα· όταν ο φορτιστής είναι συνδεδεμένος
      (ή το αμάξι φορτίζει) αλλάζει με τη διάφανη όψη (vista_carga) με το καλώδιο και τα ίδια εφέ φόρτισης με τις φωτογραφίες. */
   _heroCv(v) {
     const el = this._el, c = this._c, on = c.hero_style === "carview" && !this._cvFail;
     el.hero.dataset.style = on ? "carview" : "photo";
-    if (!on) return;
+    el.vtg.hidden = true;
+    if (!on) return this._loadPhotos();
     const color = CAR_COLORS.some((x) => x[0] === c.car_color) ? c.car_color : "black", wheels = ["open", "pro"].includes(c.iso_wheels) ? c.iso_wheels : "";
-    const key = color + "|" + wheels + "|" + this._layerBase();
-    if (this._cvKey !== key || !this._cvImgs || !el.cva.firstChild) {
-      this._cvKey = key; this._cvL = this._isoLayers(color, wheels);
-      const root = this._layerBase(), ci = (n) => `<img data-n="${n}" src="${esc(root + "carga/" + n + ".webp")}" alt="" decoding="async">`;
-      el.cva.innerHTML = this._cvL.map(([n, d]) => `<img data-n="${n}" src="${esc(root + "iso/" + d + "/" + n + ".webp")}" alt="" decoding="async">`).join("");
-      el.cvb.innerHTML = `${ci("base")}${ci("cable_connected")}${ci("cable_charging")}<svg viewBox="0 0 750 500" preserveAspectRatio="none" aria-hidden="true"><path class="cb" d="${CARGA_D}"/><path class="cf" d="${CARGA_D}"/>
-        <g class="pt" transform="translate(${CARGA_PORT[0]} ${CARGA_PORT[1]})"><circle class="pg" r="9"/><circle class="pr" r="6"/><circle class="pr r2" r="6"/></g></svg><img class="sweep" alt="" src="${esc(root + "carga/base.webp")}">`;
-      this._cvImgs = [...el.cva.querySelectorAll("img")];
-      const base = el.cva.querySelector('img[data-n="base"]');
-      if (base) base.addEventListener("error", () => { this._cvFail = true; this._force && this._force(); }, { once: true }); // faltan τα layers: γύρνα στις φωτογραφίες
+    const root = this._layerBase(), plug = !!(v.charging || v.plugged), view = this._heroView();
+    const sc = (Number(c.image_scale) || 1.2) / 1.2;
+    el.hero.style.setProperty("--ds-cvs", String(Math.max(0.5, Math.min(2, sc) * 1.08)));
+    el.hero.style.setProperty("--ds-tvs", String(Math.max(0.5, Math.min(1.3, sc * 0.96))));
+    el.cv.dataset.v = view; el.cv.classList.toggle("chg", plug);
+    /* Ένα μόνο σύνολο εικόνων είναι ορατό και ενημερώνεται κάθε φορά: φόρτιση (διάφανη όψη) → 3/4 ή από πάνω. Τα άλλα μένουν κρυμμένα και δεν αγγίζονται. */
+    el.cvi.hidden = !(plug || view === "iso"); el.cvt.hidden = plug || view !== "top";
+    el.vtg.hidden = plug;
+    if (!plug) {
+      const top = view === "top", tl = top ? "Προβολή 3/4" : "Προβολή από πάνω";
+      el.vtg.innerHTML = ico(top ? "carside" : "cartop"); el.vtg.title = T(tl); el.vtg.setAttribute("aria-label", T(tl));
     }
-    el.hero.style.setProperty("--ds-cvs", String(Math.max(0.5, Math.min(2, (Number(c.image_scale) || 1.2) / 1.2) * 1.08)));
-    this._cvImgs.forEach((im, i) => this._layerOn(im, this._cvL[i]));
-    const plug = v.charging || v.plugged;
-    el.cv.classList.toggle("chg", plug);
-    el.cvb.querySelector('img[data-n="cable_connected"]').classList.toggle("on", plug && !v.charging);
-    el.cvb.querySelector('img[data-n="cable_charging"]').classList.toggle("on", !!v.charging);
-    el.cvb.querySelector('img[data-n="base"]').classList.toggle("on", plug);
+    if (plug) {
+      this._cvbEnsure(root);
+      const cb = el.cvb, one = (n) => cb.querySelector(`img[data-n="${n}"]`);
+      this._lazyOn(one("cable_connected"), !v.charging); this._lazyOn(one("cable_charging"), !!v.charging); this._lazyOn(one("base"), true);
+      if (/sweep/.test(el.hero.dataset.fx)) { const sw = cb.querySelector(".sweep"); if (sw && !sw.getAttribute("src")) sw.setAttribute("src", sw.dataset.src); }
+    } else if (view === "top") {
+      const key = color + "|" + root;
+      if (this._cvtKey !== key || !el.cvt.firstChild) {
+        this._cvtKey = key; this._cvtL = this._topLayers(color);
+        el.cvt.innerHTML = this._cvtL.map(([n, d]) => `<img data-n="${n}" data-src="${esc(root + "top/" + d + "/" + n + ".webp")}" alt="" decoding="async">`).join("") + this._hdlSvg(true);
+        this._cvtImgs = [...el.cvt.querySelectorAll("img")];
+        this._cvBaseGuard(el.cvt);
+      }
+      this._cvtImgs.forEach((im, i) => this._layerOn(im, this._cvtL[i]));
+      if (v.unlocked) this._hdlSync(el.cvt);
+    } else {
+      const key = color + "|" + wheels + "|" + root;
+      if (this._cvKey !== key || !this._cvImgs || !el.cva.firstChild) {
+        this._cvKey = key; this._cvL = this._isoLayers(color, wheels);
+        el.cva.innerHTML = this._cvL.map(([n, d]) => `<img data-n="${n}" data-src="${esc(root + "iso/" + d + "/" + n + ".webp")}" alt="" decoding="async">`).join("") + this._hdlSvg(false);
+        this._cvImgs = [...el.cva.querySelectorAll("img")];
+        this._cvBaseGuard(el.cva);
+      }
+      this._cvImgs.forEach((im, i) => this._layerOn(im, this._cvL[i]));
+      if (v.unlocked) this._hdlSync(el.cva);
+    }
+  }
+  /* Αν λείπουν τα layers (π.χ. φάκελος images που δεν αντιγράφηκε) το hero γυρνά στις φωτογραφίες */
+  _cvBaseGuard(box) {
+    const base = box.querySelector('img[data-n="base"]');
+    if (base) base.addEventListener("error", () => { this._cvFail = true; this._force && this._force(); }, { once: true });
+  }
+  /* Η διάφανη όψη φόρτισης χτίζεται μόνο την πρώτη φορά που συνδέεται ο φορτιστής */
+  _cvbEnsure(root) {
+    if (this._cvbRoot === root && this._el.cvb.firstChild) return;
+    this._cvbRoot = root;
+    const ci = (n) => `<img data-n="${n}" data-src="${esc(root + "carga/" + n + ".webp")}" alt="" decoding="async">`;
+    this._el.cvb.innerHTML = `${ci("base")}${ci("cable_connected")}${ci("cable_charging")}<svg viewBox="0 0 750 500" preserveAspectRatio="none" aria-hidden="true"><path class="cb" d="${CARGA_D}"/><path class="cf" d="${CARGA_D}"/>
+        <g class="pt" transform="translate(${CARGA_PORT[0]} ${CARGA_PORT[1]})"><circle class="pg" r="9"/><circle class="pr" r="6"/><circle class="pr r2" r="6"/></g></svg><img class="sweep" alt="" data-src="${esc(root + "carga/base.webp")}">`;
+  }
+  /* Οι φωτογραφίες hero φορτώνονται μόνο όταν χρειάζονται (όχι στο Car View) */
+  _loadPhotos() {
+    for (const im of this._el.imgs) if (!im.getAttribute("src")) im.setAttribute("src", im.dataset.src);
   }
 
   /* Προβολή 3/4: layers με τη σειρά του repo dec_deepal (πίσω από το αμάξι → αμάξι → μπροστά) */
@@ -659,7 +746,7 @@ class DeepalS05Card extends HTMLElement {
       this._isoL = this._isoLayers(color, wheels);
       const lines = TIRES.map((t) => { const h = t.hid ? " hid" : "", x = t.wx * 7.5, y = t.wy * 5; return `<line data-pin="${t.id}" class="${h.trim()}" x1="${t.px * 7.5}" y1="${t.py * 5}" x2="${x}" y2="${y}"/>` + (t.hid ? `<circle data-pin="${t.id}" class="hid" cx="${x}" cy="${y}" r="8"/>` : `<circle data-pin="${t.id}" cx="${x}" cy="${y}" r="5"/><circle class="halo" data-pin="${t.id}" cx="${x}" cy="${y}" r="11"/>`); }).join("");
       const pills = TIRES.map((t) => `<div class="tp na" data-t="${t.id}" style="left:${t.px}%;top:${t.py}%"><div class="n">${esc(T(t.name))}</div><div class="v">--</div><div class="s"></div></div>`).join("");
-      el.viso.innerHTML = `<div class="isop">${this._isoL.map(([n, d]) => `<img data-n="${n}" src="${esc(root + d + "/" + n + ".webp")}" alt="" decoding="async">`).join("")}<svg class="tl" viewBox="0 0 750 500" aria-hidden="true">${lines}</svg>${pills}</div>`;
+      el.viso.innerHTML = `<div class="isop">${this._isoL.map(([n, d]) => `<img data-n="${n}" data-src="${esc(root + d + "/" + n + ".webp")}" alt="" decoding="async">`).join("")}<svg class="tl" viewBox="0 0 750 500" aria-hidden="true">${lines}</svg>${pills}</div>`;
       this._isoImgs = [...el.viso.querySelectorAll("img")];
       const base = el.viso.querySelector('img[data-n="base"]');
       el.vmiss.hidden = true;
@@ -685,20 +772,21 @@ class DeepalS05Card extends HTMLElement {
 
   _build() {
     const c = this._c;
-    this._cvKey = null; this._cvImgs = null; // το DOM του hero ξαναχτίζεται: τα layers Car View πρέπει να ξαναφορτωθούν
-    const imgs = Object.keys(HERO_FILES).map((k) => `<img data-k="${k}" data-i="0" src="${esc(this._heroSrc(k, 0))}" alt="" decoding="async">`).join("");
+    this._cvKey = null; this._cvImgs = null; this._cvtKey = null; this._cvtImgs = null; this._cvbRoot = null; // το DOM του hero ξαναχτίζεται: τα layers Car View πρέπει να ξαναφορτωθούν
+    const lazyPhotos = c.hero_style === "carview"; /* στο Car View δεν φορτώνονται οι φωτογραφίες του hero */
+    const imgs = Object.keys(HERO_FILES).map((k) => `<img data-k="${k}" data-i="0" data-src="${esc(this._heroSrc(k, 0))}"${lazyPhotos ? "" : ` src="${esc(this._heroSrc(k, 0))}"`} alt="" decoding="async">`).join("");
     this.shadowRoot.innerHTML = `
       <style>${CSS}</style>
       <ha-card>
         <div class="hero" id="hero">
           <div class="stage">${imgs}</div>
-          <div class="hcv" id="cv"><div class="cvi"><div class="cva" id="cva"></div><div class="cvb" id="cvb"></div></div></div>
+          <div class="hcv" id="cv"><div class="cvi" id="cvi"><div class="cva" id="cva"></div><div class="cvb" id="cvb"></div></div><div class="cvt" id="cvt" hidden></div></div>
           <div class="fx fx-handles"><div class="halo"></div><div class="core"></div></div>
           <div class="fxs"><svg viewBox="0 0 500 278" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><path class="cb" d="${CHG_D}"/><path class="cf" d="${CHG_D}"/>
             <g class="pt" transform="translate(${CHG_PORT[0]} ${CHG_PORT[1]})"><circle class="pg" r="7"/><circle class="pr" r="5"/><circle class="pr r2" r="5"/></g></svg><img class="sweep" alt="" src=""></div>
           <div class="shade-left"></div><div class="shade-top"></div><div class="shade-bot"></div>
           <div class="hero-top"><div><div class="title" id="ttl"><span id="nm">${esc(c.name)}</span><span class="plate" id="plate"></span></div><div class="total" id="total"></div></div>
-            <div class="meta" id="meta"><span class="cloud" id="cloud" role="button"></span><button class="rfs" id="rfs" data-id="refresh"></button></div></div>
+            <div class="meta" id="meta"><button class="rfs vtg" id="vtg" hidden></button><span class="cloud" id="cloud" role="button"></span><button class="rfs" id="rfs" data-id="refresh"></button></div></div>
           <div class="status" id="status"></div>
           <div class="chgbox" id="chgbox" hidden></div><i class="chgline" id="chgline" hidden></i>
           <div class="tells" id="tells"></div>
@@ -725,18 +813,18 @@ class DeepalS05Card extends HTMLElement {
       </ha-card>`;
     const sr = this.shadowRoot, g = (i) => sr.getElementById(i);
     this._dashKeys = {};
-    this._el = { card: sr.querySelector("ha-card"), hero: g("hero"), cv: g("cv"), cva: g("cva"), cvb: g("cvb"), sweep: sr.querySelector(".sweep"), imgs: [...sr.querySelectorAll(".stage img")], plate: g("plate"), cloud: g("cloud"), age: g("age"),
+    this._el = { card: sr.querySelector("ha-card"), hero: g("hero"), cv: g("cv"), cvi: g("cvi"), cvt: g("cvt"), vtg: g("vtg"), cva: g("cva"), cvb: g("cvb"), sweep: sr.querySelector(".sweep"), imgs: [...sr.querySelectorAll(".stage img")], plate: g("plate"), cloud: g("cloud"), age: g("age"),
       toast: g("toast"), status: g("status"), tells: g("tells"), rfs: g("rfs"), total: g("total"), stats: g("stats"), veh: g("veh"), vtabs: g("vtabs"), viso: g("viso"), vclim: g("vclim"), vseats: g("vseats"), pk: g("pk"), pkp: g("pkp"), pkv: g("pkv"), vmiss: g("vmiss"), vextra: g("vextra"),
       vsheet: g("vsheet"), vtctl: g("vtctl"), dash: g("dash"), info: g("info"), diag: g("diag"), charge: g("charge"), chgbox: g("chgbox"), chgline: g("chgline"), actions: g("actions"), foot: g("foot"), sheet: g("sheet"), box: g("box") };
     this._el.hero.style.setProperty("--ds-scale", String(c.image_scale));
-    if (c.image_aspect) this._el.hero.style.setProperty("--ds-aspect", c.image_aspect);
+    if (c.image_aspect) this._el.hero.style.setProperty("--ds-aspect", c.image_aspect); else if (c.hero_style === "carview") this._el.hero.style.setProperty("--ds-aspect", CV_ASPECT);
     this._el.imgs.forEach((img) => {
       img.addEventListener("error", () => {
         const next = this._heroSrc(img.dataset.k, Number(img.dataset.i) + 1);
         if (next) { img.dataset.i = String(Number(img.dataset.i) + 1); img.src = next; } else img.style.visibility = "hidden";
       });
       img.addEventListener("load", () => {
-        if (img.dataset.k === "off" && img.naturalWidth) { this._el.hero.dataset.auto = `${img.naturalWidth} / ${img.naturalHeight}`; if (!this._c.image_aspect) this._el.hero.style.setProperty("--ds-aspect", this._el.hero.dataset.auto); }
+        if (img.dataset.k === "off" && img.naturalWidth) { this._el.hero.dataset.auto = `${img.naturalWidth} / ${img.naturalHeight}`; if (!this._c.image_aspect && this._c.hero_style !== "carview") this._el.hero.style.setProperty("--ds-aspect", this._el.hero.dataset.auto); }
       });
     });
     this._el.dash.querySelectorAll(":scope > img").forEach((img) => {
@@ -754,6 +842,7 @@ class DeepalS05Card extends HTMLElement {
     this._swipe(this._el.vbox, this._el.vsheet); this._swipe(this._el.box, this._el.sheet);
     this._pkInit(); this._bindPress();
     this._el.rfs.addEventListener("click", () => this._onAction("refresh"));
+    this._el.vtg.addEventListener("click", (e) => { e.stopPropagation(); this._toggleView(); });
     this._el.stats.addEventListener("click", (e) => {
       const tp = e.target.closest("[data-tp]"); if (tp) { if (!tp.disabled) this._tempStep(Number(tp.dataset.tp)); return; }
       const b = e.target.closest("[data-id]"); if (b) return this._onAction(b.dataset.id);
@@ -836,7 +925,9 @@ class DeepalS05Card extends HTMLElement {
     const fx = ["flow_port", "flow", "port", "sweep", "none"].includes(c.charge_fx) ? c.charge_fx : "flow_port";
     el.hero.dataset.fx = v.charging && fx !== "none" ? fx.replace("_", " ") : "";
     el.hero.style.setProperty("--ds-scale", String(c.image_scale));
-    if (c.image_aspect) el.hero.style.setProperty("--ds-aspect", String(c.image_aspect)); else if (el.hero.dataset.auto) el.hero.style.setProperty("--ds-aspect", el.hero.dataset.auto); else el.hero.style.removeProperty("--ds-aspect");
+    if (c.image_aspect) el.hero.style.setProperty("--ds-aspect", String(c.image_aspect));
+    else if (c.hero_style === "carview" && !this._cvFail) el.hero.style.setProperty("--ds-aspect", CV_ASPECT); /* το Car View είναι λίγο ψηλότερο: χωράει το κείμενο πάνω και τη γραμμή κατάστασης κάτω χωρίς να πατάνε το αμάξι */
+    else if (el.hero.dataset.auto) el.hero.style.setProperty("--ds-aspect", el.hero.dataset.auto); else el.hero.style.removeProperty("--ds-aspect");
     el.imgs.forEach((i) => i.classList.toggle("on", i.dataset.k === v.img));
     this._heroCv(v);
     if (/sweep/.test(el.hero.dataset.fx)) { const on = el.imgs.find((i) => i.classList.contains("on")); if (on && on.src && el.sweep.getAttribute("src") !== on.src) el.sweep.src = on.src; }

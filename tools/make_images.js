@@ -160,14 +160,16 @@ const jobs = {
   },
   async "hero-carview"() {
     const hero = (p) => shot(p.locator("deepal-s05-card >> #hero"));
-    const cv = (c, o = {}) => scene({ cfg: { hero_style: "carview", car_color: c, diag_mode: "all" }, over: { ...BASE, ...o } }, hero);
+    const cv = (c, o = {}, cfg = {}) => scene({ cfg: { hero_style: "carview", car_color: c, diag_mode: "all", ...cfg }, over: { ...BASE, ...o } }, hero);
     const items = [
       { buf: await cv("black"), tag: "BLACK" },
       { buf: await cv("white", { "binary_sensor.s05_front_left_door": "on", "binary_sensor.s05_low_beam": "on" }), tag: "DOOR OPEN, LIGHTS ON" },
       { buf: await cv("blue", { "binary_sensor.s05_trunk": "on", "binary_sensor.s05_hood": "on" }), tag: "BONNET &amp; TAILGATE" },
       { buf: await cv("silver"), tag: "SILVER" },
+      { buf: await cv("blue", { "binary_sensor.s05_hood": "on", "binary_sensor.s05_rear_right_window_open": "on" }, { hero_view: "top" }), tag: "TOP VIEW, BONNET &amp; WINDOW OPEN" },
+      { buf: await cv("white", {}, { hero_view: "top" }), tag: "TOP VIEW" },
     ];
-    await slide("hero-carview", { eyebrow: "Car View hero", title: "Your car,<br>live and in colour", desc: "Choose the hero image: your own photos, or a Car View render in black, blue, grey, silver or white. Doors, bonnet, tailgate, windows and lights follow the real state of the car.", items, wrap: true, w: 450, gap: 18, rowGap: 52 });
+    await slide("hero-carview", { eyebrow: "Car View hero", title: "Your car,<br>live and in colour", desc: "Choose the hero image: your own photos, or a Car View render in black, blue, grey, silver or white, in 3/4 or from above (one tap on the button in the hero). Doors, bonnet, tailgate, windows and lights follow the real state of the car.", items, wrap: true, w: 330, gap: 18, rowGap: 50 });
   },
   async "charging-view"() {
     const c = { hero_style: "carview", car_color: "white", diag_mode: "all" };

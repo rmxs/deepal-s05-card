@@ -1,5 +1,55 @@
 # Changelog
 
+## 1.4.0-beta.1
+
+Top view and a taller hero. · Όψη από πάνω και πιο ψηλό hero. · Vista desde arriba y un hero más alto.
+
+> **Beta.** Pre-release for testing; in HACS it appears only with *Show beta versions* on. · Δοκιμαστική έκδοση· στο HACS εμφανίζεται μόνο με ενεργό το *Show beta versions*. · Versión de prueba; en HACS solo aparece con *Show beta versions* activado.
+
+**Added**
+
+- **Top view** in the Car View hero. A button at the top right of the hero switches between the 3/4 view and a view from above, with live doors, bonnet, tailgate, windows and lights. *Settings → Vehicle → View* (`hero_view: iso | top`) chooses the view the card opens with; the button changes it on that device. While the charger is connected the translucent charging view is shown in either case. The project only ships the silver top view, so the other four colours are recoloured copies made by `tools/build_planta.py`, including the open doors, bonnet, tailgate and the frame of open windows (the red warning tint stays).
+- **Lit door handles** when the vehicle is unlocked, in both views: amber handles with a soft pulsing glow (hidden while that door is open). The car is also centred exactly in the middle of the hero.
+
+**Changed**
+
+- The Car View hero is taller (aspect `7 / 5`, was the photo's ratio, about `16 / 9`), so the text at the top and the status line at the bottom no longer sit on the car. `image_aspect` still overrides it.
+- Lighter on resources: only the images of the view you see are loaded and updated. A layer's image is fetched the first time it is needed (about a third of the Car View images at start-up instead of all of them), the hero photos are not loaded at all in Car View, the translucent charging view is built when the charger is first connected, and nothing is updated while another view is on screen.
+- The charging text in Car View is anchored to the charge port, so it stays next to it at any card width and zoom (it used to drift away as the card got wider). The “AC” line lines up with the others, and the guide next to the text is a solid line.
+- The title of the climate tile in the stepper style is on the same line as the title of the Energy tile (it was 2 px lower).
+
+<details><summary>Ελληνικά</summary>
+
+**Προστέθηκαν**
+
+- **Όψη από πάνω** στο hero Car View. Ένα κουμπί πάνω δεξιά στο hero αλλάζει ανάμεσα στην όψη 3/4 και στην όψη από πάνω, με ζωντανές πόρτες, καπό, πορτμπαγκάζ, παράθυρα και φώτα. Το *Ρυθμίσεις → Όχημα → Προβολή* (`hero_view: iso | top`) ορίζει με ποια προβολή ανοίγει η κάρτα· το κουμπί την αλλάζει στη συσκευή σου. Όσο ο φορτιστής είναι συνδεδεμένος δείχνει πάντα η διάφανη όψη φόρτισης. Το project έχει μόνο την ασημί όψη από πάνω, οπότε τα άλλα τέσσερα χρώματα είναι ξαναχρωματισμένα αντίγραφα που φτιάχνει το `tools/build_planta.py`, μαζί με τις ανοιχτές πόρτες, το καπό, το πορτμπαγκάζ και το πλαίσιο των ανοιχτών παραθύρων (το κόκκινο της προειδοποίησης μένει).
+- **Αναμμένες χειρολαβές** όταν το όχημα είναι ξεκλείδωτο, και στις δύο όψεις: κεχριμπαρένιες χειρολαβές με απαλή παλμική λάμψη (κρύβονται όσο η πόρτα είναι ανοιχτή). Το αμάξι κεντράρεται επίσης ακριβώς στη μέση του hero.
+
+**Αλλαγές**
+
+- Το hero στο Car View είναι πιο ψηλό (λόγος `7 / 5`, πριν ο λόγος της φωτογραφίας, περίπου `16 / 9`), ώστε το κείμενο πάνω και η γραμμή κατάστασης κάτω να μην πατάνε το αμάξι. Το `image_aspect` εξακολουθεί να υπερισχύει.
+- Λιγότερη κατανάλωση πόρων: φορτώνονται και ενημερώνονται μόνο οι εικόνες της προβολής που βλέπεις. Η εικόνα ενός layer κατεβαίνει την πρώτη φορά που χρειάζεται (περίπου το ένα τρίτο των εικόνων του Car View στην εκκίνηση αντί για όλες), οι φωτογραφίες του hero δεν φορτώνουν καθόλου στο Car View, η διάφανη όψη φόρτισης χτίζεται όταν συνδεθεί για πρώτη φορά ο φορτιστής και τίποτα δεν ενημερώνεται όσο φαίνεται άλλη προβολή.
+- Το κείμενο φόρτισης στο Car View δένεται πάνω στην πρίζα, ώστε να μένει δίπλα της σε κάθε πλάτος και μεγέθυνση (πριν απομακρυνόταν όσο πλάτυνε η κάρτα). Η γραμμή «AC» ευθυγραμμίζεται με τις άλλες και ο οδηγός δίπλα στο κείμενο είναι συμπαγής γραμμή.
+- Ο τίτλος του tile Κλιματισμού στο στυλ stepper είναι στο ίδιο ύψος με τον τίτλο του tile Ενέργεια (ήταν 2 px πιο κάτω).
+
+</details>
+
+<details><summary>Español</summary>
+
+**Añadido**
+
+- **Vista desde arriba** en el hero Car View. Un botón arriba a la derecha del hero alterna entre la vista 3/4 y la vista desde arriba, con puertas, capó, portón, ventanillas y luces en vivo. *Ajustes → Vehículo → Vista* (`hero_view: iso | top`) elige con qué vista se abre la tarjeta; el botón la cambia en ese dispositivo. Mientras el cargador está conectado se muestra siempre la vista translúcida de carga. El proyecto solo trae la vista desde arriba en plata, así que los otros cuatro colores son copias recoloreadas hechas con `tools/build_planta.py`, incluidas las puertas, el capó, el portón abiertos y el marco de las ventanillas abiertas (el rojo de aviso se mantiene).
+- **Manillas de las puertas iluminadas** cuando el vehículo está desbloqueado, en las dos vistas: manillas ámbar con un suave brillo pulsante (se ocultan mientras esa puerta está abierta). El coche también queda centrado exactamente en el medio del hero.
+
+**Cambios**
+
+- El hero del Car View es más alto (proporción `7 / 5`, antes la de la foto, unos `16 / 9`), para que el texto de arriba y la línea de estado de abajo no queden sobre el coche. `image_aspect` sigue teniendo prioridad.
+- Menos recursos: solo se cargan y actualizan las imágenes de la vista que ves. La imagen de una capa se descarga la primera vez que hace falta (alrededor de un tercio de las imágenes del Car View al arrancar en vez de todas), las fotos del hero no se cargan en absoluto en Car View, la vista translúcida de carga se construye cuando se conecta el cargador por primera vez y no se actualiza nada mientras hay otra vista en pantalla.
+- El texto de carga en Car View queda anclado al puerto de carga, así que se mantiene a su lado con cualquier ancho y zoom (antes se alejaba al ensanchar la tarjeta). La línea «AC» se alinea con las demás y la guía junto al texto es una línea continua.
+- El título del tile de clima en el estilo stepper está a la misma altura que el del tile Energía (estaba 2 px más abajo).
+
+</details>
+
 ## 1.3.1
 
 Open windows in red. · Ανοιχτά παράθυρα με κόκκινο. · Ventanillas abiertas en rojo.

@@ -26,7 +26,7 @@ It works with the [Deepal Alternative](https://github.com/Sunek0/ha-deepal-alter
 ## Features
 
 - Hero photo that changes with the vehicle state (off, lights, unlocked, charging, charge complete).
-- **Hero style** (*Settings → Vehicle*): your own photos, or a live **Car View** render in black, blue, grey, silver or white, with doors, bonnet, tailgate, windows and lights that follow the car. When the charger is connected the car switches to a translucent side view with a grey cable (plugged in) or a green cable with the same energy-flow and port-pulse effects (charging).
+- **Hero style** (*Settings → Vehicle*): your own photos, or a live **Car View** render in black, blue, grey, silver or white, with doors, bonnet, tailgate, windows and lights that follow the car, in 3/4 or **from above** (a button in the hero switches the view with one tap; *Settings → Vehicle → View* sets the default). When the charger is connected the car switches to a translucent side view with a grey cable (plugged in) or a green cable with the same energy-flow and port-pulse effects (charging).
 - Round control buttons: lock, windows, trunk, climate, tyres, interior, flash lights, horn, find car — layout, labels, size, order and visibility are configurable.
 - Range, battery (and fuel for PHEV) rings; the battery ring animates while charging.
 - Charging status: current, time remaining and type as text next to the charge port (4 styles), plus an optional animated effect on the car (cable flow / charge-port pulse / light sweep).
@@ -83,7 +83,7 @@ The target temperature picker uses the `climate.<prefix>_cabin_climate` entity d
 
 ## Photos and layers
 
-The card shows photos from `images/car/` (hero), the Car View layers from `images/iso/<colour>/` and the interior layers from `images/interior/`, the translucent charging view from `images/carga/`, all next to the card file (HACS installs them with the card).
+The card shows photos from `images/car/` (hero), the Car View layers from `images/iso/<colour>/` and the interior layers from `images/interior/`, the top view from `images/top/<colour>/`, the translucent charging view from `images/carga/`, all next to the card file (HACS installs them with the card).
 The hero photos are made for a **black Deepal S05**; the Car View is available in five colours (*Settings → Vehicle → Car colour*) and can also be used as the hero (*Settings → Vehicle → Hero style*). For another model replace the files (same names) or point the card to your own folder in *Settings → Images*.
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the origin and licences of the images.
 
@@ -103,7 +103,7 @@ bash scripts/build.sh      # builds dist/deepal-s05-card.js from src/
 ```
 
 Edit the files in `src/`, run the build, commit both `src/` and `dist/`.
-The Car View images are converted from the dec_deepal renders with `tools/build_iso.py`, the charging view with `tools/build_carga.py` and the interior layers with `tools/build_layers.py` (see the header of each script).
+The Car View images are converted from the dec_deepal renders with `tools/build_iso.py`, the top view (recoloured from the silver original) with `tools/build_planta.py`, the charging view with `tools/build_carga.py` and the interior layers with `tools/build_layers.py` (see the header of each script).
 
 ## License
 
